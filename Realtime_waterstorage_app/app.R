@@ -6,13 +6,13 @@
 # Author: Sam Lausten, 
 #
 #-------------------------------
-#install.packages('waterData')
+
 
 #load libraries
 library(shiny)
 library(leaflet)
 library(waterData)
-library()
+library(plotly)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -30,24 +30,26 @@ ui <- fluidPage(
         #main panel/tabs
         mainPanel(
            tabsetPanel(
-               tabPanel('Time-series', plotlyOutput)
+               tabPanel('Watershed Visualizations', plotlyOutput),
+               tabPanel('Table view' ,tableOutput("table")),
+               tabPanel('Map of Stations', leafletOutput("map",width = '100%')),
+               tabPanel('About',h4("This app visualizes real-time data from Hubbard Brook research Watershed sites, 
+                                   as well as related snowpack and weather conditions, for a date range selected to compare the two sites
+                                   or by certain perameters")
+      
            )
-        )
-    )
-)
+        ) #mainPanel
+    )#sidebarLayout
+)#fluidPage
 
-# Define server logic required to draw a histogram
+# Define server
 server <- function(input, output) {
+    #----------------
+    # read in cleaned watershed data
+    # ---------------
+    
+    
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    })
-}
 
 # Run the application 
 shinyApp(ui = ui, server = server)
