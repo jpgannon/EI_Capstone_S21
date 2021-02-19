@@ -119,6 +119,17 @@ ws3_essential_time <- ws3_essential %>%
          year = year(TIMESTAMP), 
          hour = hour(TIMESTAMP))
 
+snowdat_15 <- ws3_upper_snowdat15mins %>%
+  select("TIMESTAMP", "H2O_Content_1", "H2O_Content_2", "Depthscaled")
+
+snowdat_15DT <- snowdat_15 %>% 
+   mutate(month = month(TIMESTAMP),
+         day = day(TIMESTAMP),
+         week= week(TIMESTAMP),
+         year = year(TIMESTAMP), 
+         hour = hour(TIMESTAMP))
+
+
 
 ```
 
