@@ -129,7 +129,7 @@ snowdat_15DT <- snowdat_15 %>%
          year = year(TIMESTAMP), 
          hour = hour(TIMESTAMP))
 
-
+watertable_data 
 
 ```
 
