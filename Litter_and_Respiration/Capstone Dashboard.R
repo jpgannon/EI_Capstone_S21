@@ -6,11 +6,11 @@ library(rgdal)
 
 
 Litterfall <-
-  read.csv("C:/Users/Jake Kwak/Downloads/LitterFall.csv")
+  read.csv("Litterfall.csv")
 SoilRespiration <-
-  read.csv("C:/Users/Jake Kwak/Downloads/SoilResp.csv")
+  read.csv("SoilResp.csv")
 StandLocations <-
-  read.csv("C:/Users/Jake Kwak/Downloads/StandLocations.csv")
+  read.csv("StandLocations.csv")
 
 
 ui <- dashboardPage(
@@ -27,9 +27,9 @@ ui <- dashboardPage(
             h1("Home Page, desciption of app and how to use will be placed here")),
     tabItem(tabName = "Map",
             box(width = 8, sliderInput("Year", "Year:", 
-                            min = min(Litterfall$year),
-                            max = max(Litterfall$year),
-                            value = c(min(Litterfall$year), max(Litterfall$year)),
+                            min = min(Litterfall$Year),
+                            max = max(Litterfall$Year),
+                            value = c(min(Litterfall$Year), max(Litterfall$Year)),
                             sep = "",
                             step = 1)),
             box(width = 4, selectInput("Stand", "Stand:", StandLocations$Site)),
@@ -38,11 +38,20 @@ ui <- dashboardPage(
     tabItem(tabName = "Litterfall",
             h1("Litterfall")),
     tabItem(tabName = "Soil_Respiration",
+            box(plotOutput("correlation_plot"), width = 8),
+            box(
+              selectInput("Flux", "Flux", 
+                          c("flux", "year","stand"))
+            ),
             h1("Soil Respiration"))
   ))
 )
 
 server <- function(input, output) {
+  output$correlation_plot <- renderPlot({
+    plot(SoilRespiration$treatment, SoilRespiration[[input$Flux]],
+         xlab = "Treatment", ylab = "Flux")
+  })
   
 }
 
