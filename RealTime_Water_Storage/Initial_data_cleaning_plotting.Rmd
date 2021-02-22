@@ -16,15 +16,17 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r loading}
-library(tidyverse)
 
+#
+library(tidyverse)
+library(lubridate)
+library(waterData)
 
 
 #reading in WS3 well data
 
 ws3_upper_wells <- read_csv("RealTime_Water_Storage/Water_table_WS3upper_WS_3Up_wells.dat",
-                 skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="Batt_Volt", X4= "ptemp_Max" , X5= "HB156_psi", X6= "HB156_rawdepth", X7= "HB156_depth_corr", X8= "HB156_corr_depth", X9=  "HB156_welltemp" , X10= "HB179s_psi", X11= "HB179s_rawdepth", X12=  "HB179s_depth_corr" , X13= "HB179s_corr_depth" , X14= "HB179s_welltemp" , X15= "HB176d_psi" , X16= "HB176d_rawdepth", X17= "HB176d_depth_corr" , X18= "HB176d_corr_depth", X19 = "HB176d_welltemp"))
-
+                 skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="Batt_Volt", X4= "ptemp_Max" , X5= "WS3_N1_psi",X6="WS3_N1_rawdepth",X7="WS3_N1_depth_corr",X8="WS3_N1_corr_depth",X9="WS3_N1_welltemp",X10="WS3_N2_psi",X11="WS3_N2_rawdepth",X12="WS3_N2_depth_corr",X13="WS3_N2_corr_depth",X14="WS3_N2_welltemp",X15="WS3_42_4_d2_psi",X16="WS3_42_4_d2_rawdepth",X17="WS3_42_4_d2_depth_corr",X18="WS3_42_4_d2_corr_depth",X19="WS3_42_4_d2_welltemp"))
 
 #reading in WS9 well data
 
@@ -51,17 +53,83 @@ ws9_upper_snowdat15mins <- read_csv("RealTime_Water_Storage/Water_table_WS9_WS_9
 
 ws9_upper_snowdat_hr <- read_csv("RealTime_Water_Storage/Water_table_WS9_WS_9_snowdat_hr.dat",
                  skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="H2O_Content_1_Avg", X4= "H2O_Content_2_Avg", X5= "Avg_Period_1_Avg", X6= "Avg_Period_2_Avg", X7="RTD_Avg(1)", X8= "RTD_Avg(2)", X9=  "RTD_Avg(3)" , X10= "RTD_Avg(4)", X11= "RTD_Avg(5)", X12=  "RTD_Avg(6)" , X13= "RTD_Avg(7)" , X14= "RTD_Avg(8)" , X15= "RTD_Avg(9)" , X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , X18= "Depthscaled_Avg"))
+```
 
 
+```{r sample plot}
+
+plot_1 <- ggplot(ws3_upper_wells, aes(x=TIMESTAMP, y=WS3_N1_welltemp))+
+  geom_point()+
+  geom_smooth(method="loess", se=F)
+  
+plot_1
+
+
+date_means <- ws3_upper_wells %>% 
+  mutate(month = month(TIMESTAMP),
+         day = day(TIMESTAMP),
+         week=week(TIMESTAMP),
+         year = year(TIMESTAMP), 
+         hour = hour(TIMESTAMP)) 
+
+
+well_temp <- date_means %>%
+  group_by(day, month) %>%
+  summarize( WS3_N1_welltemp= mean(WS3_N1_welltemp)) %>% 
+  filter(month == 1)
+
+
+
+theme_set(theme_bw())
+
+
+plot_2 <- ggplot(well_temp, aes(x=day, y=WS3_N1_welltemp))+
+  geom_point(col="blue")+
+  labs(title= "Well Temperature daily avg in WS3",
+       x = "Days in January",
+       y = "Well Temperature (C)") 
+  
+plot_2
+
+
+#### data notes
+#-------
+#h20content (vmc)
+#see if water content sensors are functional
+
+#ws3_corr
+#ws4
+# https://hubbardbrook.org/d/hubbard-brook-data-catalog
+# n1 and n2 shallow
+
+  
 
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+```{r essential water data}
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+ws3_essential <- ws3_upper_wells %>% 
+  select(TIMESTAMP, WS3_N1_corr_depth, WS3_N2_corr_depth,WS3_42_4_d2_corr_depth)
+  
+ws3_essential_time <- ws3_essential %>% 
+  mutate(month = month(TIMESTAMP),
+         day = day(TIMESTAMP),
+         week= week(TIMESTAMP),
+         year = year(TIMESTAMP), 
+         hour = hour(TIMESTAMP))
+
+snowdat_15 <- ws3_upper_snowdat15mins %>%
+  select("TIMESTAMP", "H2O_Content_1", "H2O_Content_2", "Depthscaled")
+
+snowdat_15DT <- snowdat_15 %>% 
+   mutate(month = month(TIMESTAMP),
+         day = day(TIMESTAMP),
+         week= week(TIMESTAMP),
+         year = year(TIMESTAMP), 
+         hour = hour(TIMESTAMP))
+
+watertable_data 
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
