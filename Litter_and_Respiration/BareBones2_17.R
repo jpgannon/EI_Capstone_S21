@@ -4,6 +4,9 @@ library(shiny)
 #LL <- read_csv("litter data")
 #SR <- read_csv("Soil Resp")
 
+Litterfall <- read.csv("C:/Users/Jake Kwak/Downloads/LitterFall.csv")
+SoilRespiration <- read.csv("C:/Users/Jake Kwak/Downloads/SoilResp.csv")
+
 #Define Treatment Groups and Species Types
 treatment <- c("Phosphorus", "Nitrogen", "Nitrogen and Phosphorus","Control")
 species <- c("ASH", "ASH",	"BASP",	"BASS",	"BE",	"HB",	"OAK")
