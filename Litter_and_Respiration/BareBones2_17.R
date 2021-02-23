@@ -1,7 +1,7 @@
 library(tidyverse)
 library(shiny)
 
-#LL <- read_csv("litter data")
+litter.va.tech.1.29.21 <- read_csv("litter.va.tech.1.29.21.csv")
 #SR <- read_csv("Soil Resp")
 
 Litterfall <- read.csv("C:/Users/Jake Kwak/Downloads/LitterFall.csv")
@@ -23,7 +23,6 @@ ui <- fluidPage(
              radioButtons("treatment", "Choose a Treatment Type:", treatment),
              sliderInput("date", "Choose a Timeframe:", value = c(2005,2006), min = 2005, max = 2021),
              radioButtons("species", "Choose a Species:", species),
-             plotOutput("timeseries", width = "700px", height = "300px"),
              plotOutput("boxplot")
     ),
     tabPanel("Soil Respiration"),
@@ -33,12 +32,21 @@ ui <- fluidPage(
 
 #Define Server
 server <- function(input, output, sessions) {
+  #Stand Ouput
   stand <- reactive({get(input$stand, "package:ggplot2")})
+  
+  #Treatment Ouput
   treatment <- reactive({get(input$treatment, "package:ggplot2")})
+  
+  #Timeframe Ouput
   output$product <- renderText({date})
+  
+  #Species Ouput
   species<- reactive({get(input$species, "package:ggplot2")})
-  output$timeseries <- renderPlot(plot(1:5), res = 96)
+  
+  #Timeseries plot
   output$boxplot <- renderPlot(boxplot(1:5))
 }
+
 #Run the Application
 shinyApp(ui = ui, server = server)
