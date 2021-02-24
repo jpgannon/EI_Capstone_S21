@@ -10,9 +10,9 @@
 
 #load libraries
 library(shiny)
+library(shinydashboard)
 library(leaflet)
-#library(waterData)
-#library(plotly)
+library(lubridate)
 library(DT) #MU: Helpful for displaying data tables.
 library(tidyverse) #MU: I added tidyverse because it has ggplot2 and other good functions 
 
@@ -31,6 +31,7 @@ ws3_upper_wells <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_
     select(TIMESTAMP, WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth) %>%
     pivot_longer(cols = c(WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth))
 
+
 #reading in WS9 well data
 
 ws9_upper_wells <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_table_WS9_WS_9_wells.dat",
@@ -46,6 +47,8 @@ ws9_upper_wells <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_
                                                     X19 = "HB176d_welltemp"))%>%
   select(TIMESTAMP, HB156_corr_depth, HB179s_corr_depth, HB176d_corr_depth) %>%
   pivot_longer(cols = c(HB156_corr_depth, HB179s_corr_depth, HB176d_corr_depth))
+
+
 
 
 #reading in WS3 Snow 15 mins 
@@ -108,12 +111,14 @@ ws9_upper_snowdat_hr <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/W
                                                          X17= "Depthraw_Avg" , X18= "Depthscaled_Avg"))%>%
   select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) 
 
-# Define UI for application that draws a histogram
+# Define UI for application
 ui <- fluidPage(
 
     # Application title
     titlePanel("Realtime Watershed Data - Hubbard Brook"),
 
+        
+    
     # Sidebar with daterange 
     sidebarLayout(
         sidebarPanel(
@@ -128,16 +133,14 @@ ui <- fluidPage(
         #main panel/tabs
         mainPanel(
            tabsetPanel(
-               tabPanel('About',h4("This app visualizes real-time data from Hubbard Brook research watershed sites 3 and 9, 
-                                   as well as related snowpack and weather conditions, for a date range selected to compare the two sites
-                                 or by certain perameters."),
+               tabPanel('About'),
                tabPanel('Watershed Visualizations', plotOutput("plot1")),
-               tabPanel('Table' ,tableOutput("table"))#,
-               #tabPanel('Map of Stations', leafletOutput("map",width = '100%'))
+               tabPanel('Table' ,tableOutput("table")),
+               tabPanel('Map of Stations', leafletOutput("map",width = '100%'))
            )
         ) #mainPanel
     )#sidebarLayout
-))#fluidPage
+)#fluidPage
 
 # Define server
 server <- function(input, output) {
@@ -154,6 +157,28 @@ server <- function(input, output) {
             geom_line()
     })
 }
+
+
+#---------------------------------------------
+# Plot map of station locations using leaflet
+#---------------------------------------------
+
+#m<-leaflet() %>%
+ #addProviderTiles(providers$OpenTopoMap) %>% 
+ #addTiles() %>%  # Add default OpenStreetMap map tiles
+ #setView(lng= -71.7185, lat =-43.9403, zoom =9)
+ #addMarkers(lng = ~longitude, lat = ~latitude, popup = "Hubbard Brook Experimental Forest")
+
+#output$map <- renderLeaflet(
+ #m
+#)
+
+
+#---------------------------------------------
+ # END Server function
+#---------------------------------------------
+#---------------------------------------------
+
 
 # Run the application 
 shinyApp(ui = ui, server = server)
