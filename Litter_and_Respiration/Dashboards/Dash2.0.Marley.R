@@ -7,21 +7,19 @@ library(tidyr)
 
 
 Litterfall <-
-    read.csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/Litterfall.csv")
+    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/Litterfall.csv")
 SoilRespiration <-
-    read.csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/SoilResp.csv")
+    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/SoilResp.csv")
 StandLocations <-
-    read.csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/StandLocations.csv")
+    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/StandLocations.csv")
+lat_long <-
+    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/lat_long.csv")
 
 CleanSoilResp <- select(SoilRespiration, date, stand, flux, treatment)
 
 CleanSoilResp <- filter(CleanSoilResp, flux < 500, flux >= 0)
 
-CleanLitter <- select()
-
-#CleanLit <- select()
-
-#FixedLocations <-
+lat_long <- lat_long%>%mutate(popup_info = paste("Stand:",Site))
 
 
 
@@ -49,7 +47,7 @@ ui <- dashboardPage(
                 h1("Map")),
         #Timeseries ui
         tabItem(tabName = "Litterfall",
-                box(plotoutput("timeseries_plot"), width = 8),
+                box(plotOutput("timeseries_plot"), width = 8),
                 box(
                     title = "Timeseries Litterfall"
                     ,status = "primary"

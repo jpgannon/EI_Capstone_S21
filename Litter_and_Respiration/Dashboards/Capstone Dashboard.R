@@ -4,6 +4,7 @@ library(leaflet)
 library(dplyr)
 library(rgdal)
 library(tidyr)
+library(ggplot2)
 
 
 Litterfall <-
