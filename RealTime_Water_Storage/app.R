@@ -135,7 +135,7 @@ ui <- fluidPage(
            tabsetPanel(
                tabPanel('About'),
                tabPanel('Watershed Visualizations', plotOutput("plot1")),
-               tabPanel('Table' ,tableOutput("table")),
+               tabPanel('Table' ,DTOutput("table")),
                tabPanel('Map of Stations', leafletOutput("map",width = '100%'))
            )
         ) #mainPanel
@@ -147,8 +147,9 @@ server <- function(input, output) {
     #----------------
     # read in cleaned watershed data
     # ---------------
-    output$table <- renderDT(ws3_upper_snowdat_hr, #MU: The table won't show yet because this package requires the data to be read into a reactive datatable format "reactiveFileReader()"
-                             class = "display nowrap compact", #MU: this is the style of the table
+    output$table <- renderDT(ws3_upper_snowdat_hr, #MU: When we do the calculations we can put them in one dataset and output that.
+                             class = "display", #MU: this is the style of the table
+                             caption = 'Table 1: This table shows x.', #MU: adds a caption to the table
                              filter = "top") #MU: This places the filter at the top of the table
     #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
     output$plot1 <- renderPlot({
