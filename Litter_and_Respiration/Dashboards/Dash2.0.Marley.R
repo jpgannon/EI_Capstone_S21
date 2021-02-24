@@ -4,6 +4,8 @@ library(leaflet)
 library(dplyr)
 library(rgdal)
 library(tidyr)
+library(ggplot2)
+library(hrbrthemes)
 
 
 Litterfall <-
@@ -16,13 +18,6 @@ StandLocations <-
 CleanSoilResp <- select(SoilRespiration, date, stand, flux, treatment)
 
 CleanSoilResp <- filter(CleanSoilResp, flux < 500, flux >= 0)
-
-CleanLitter <- select()
-
-#CleanLit <- select()
-
-#FixedLocations <-
-
 
 
 ui <- dashboardPage(
@@ -47,41 +42,40 @@ ui <- dashboardPage(
                 box(width = 4, selectInput("Stand", "Stand:", StandLocations$Site)),
                 fluidRow(box(width = 12, leaflet()%>% addTiles())),
                 h1("Map")),
-        #Timeseries ui
+       
         tabItem(tabName = "Litterfall",
-                box(plotoutput("timeseries_plot"), width = 8),
-                box(
-                    title = "Timeseries Litterfall"
-                    ,status = "primary"
-                    ,solidHeader = TRUE
-                    ,collapsible = TRUE
-                    ,plotOutput("k", height = "300px")
-        
-                ),
+               box(plotOutput("timeseries_plot"), width = 8),
+               box(
+                   selectInput("Treatment", "Treatment Type",
+                               c("N", "P", "NP", "C"))
+               ),
                 h1("Litterfall")),
+        
         tabItem(tabName = "Soil_Respiration",
                 box(plotOutput("correlation_plot"), width = 8),
                 box(
                     selectInput("Flux", "Flux", 
-                                c("flux","stand"))
+                                c("flux","stand")),
                 ),
                 h1("Soil Respiration"))
-    ))
+    )),
 )
-
 server <- function(input, output) {
     output$correlation_plot <- renderPlot({
         plot(CleanSoilResp$treatment, CleanSoilResp[[input$Flux]],
              xlab = "Treatment", ylab = "Flux")
     })
-    #Litterfall Timeseries server
-    output$k <- renderPlot({
-        ggplot(dataset(),
-               aes(x=Year, y=whole.mass, group=Treatment, colour=Treatment)) +
-         geom_line(aes(size=Treatment)) +
-            geompoint() +
-            labs(title ="Timeseries Litterfall", x = "Year", y = "whole.mass")
-    })
+
+    output$timeseries_plot <- renderPlot({
+        ggplot(data = Litterfall,aes(x=Year, y=whole.mass)) +
+            geom_line( color = "black") +
+
+            xlab("") +
+            theme_ipsum() +
+            theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+            labs(title ="Time Series Litterfall",
+                 x = "Year",
+                 y = "Mass (g litter /m2)")})
     
 }
 
