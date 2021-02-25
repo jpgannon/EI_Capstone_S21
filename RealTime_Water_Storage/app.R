@@ -137,7 +137,7 @@ tabPanel('Watershed Visualizations',
 tabPanel('Table' ,DTOutput("table")),
 
 
-tabPanel('Porosity Slider', ),  
+tabPanel('Porosity Slider' ),  
 tabPanel('Map of Stations', leafletOutput("map",width = '100%'))
 
 
