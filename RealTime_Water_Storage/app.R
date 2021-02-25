@@ -7,7 +7,6 @@
 #
 #-------------------------------
 
-
 #load libraries
 library(shiny)
 library(shinydashboard)
@@ -15,6 +14,7 @@ library(leaflet)
 library(lubridate)
 library(DT) #MU: Helpful for displaying data tables.
 library(tidyverse) #MU: I added tidyverse because it has ggplot2 and other good functions 
+library(grid)
 
 #reading in WS3 well data
 #setwd("/Volumes/GoogleDrive/My Drive/CLASSES/EI Capstone/EI_Capstone_S21")
@@ -157,26 +157,23 @@ server <- function(input, output) {
             ggplot(aes(x = TIMESTAMP, y = value))+
             geom_line()
     })
-}
+
 
 
 #---------------------------------------------
 # Plot map of station locations using leaflet
 #---------------------------------------------
 
-#m<-leaflet() %>%
- #addProviderTiles(providers$OpenTopoMap) %>% 
- #addTiles() %>%  # Add default OpenStreetMap map tiles
- #setView(lng= -71.7185, lat =-43.9403, zoom =9)
- #addMarkers(lng = ~longitude, lat = ~latitude, popup = "Hubbard Brook Experimental Forest")
+m <-leaflet() %>% 
+    addProviderTiles("OpenTopoMap", options = providerTileOptions(noWrap = TRUE)) %>% 
+    addMarkers(lng= -71.7185, lat = 43.9403, popup = "Hubbard Brook Experimental Forest")
 
-#output$map <- renderLeaflet(
- #m
-#)
-
+output$map <- renderLeaflet(
+    m
+  )
 
 #---------------------------------------------
- # END Server function
+} # END Server function
 #---------------------------------------------
 #---------------------------------------------
 
