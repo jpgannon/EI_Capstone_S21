@@ -136,8 +136,25 @@ tabPanel('Watershed Visualizations',
   
 tabPanel('Table View' ,DTOutput("table")),
 
+#just experimental, not close to being real calculations - SL
+tabPanel('Porosity Slider', 
+         sidebarLayout(
+            sidebarPanel(width = 4,
+                sliderInput(inputId = "poros",label = "Porosity:",
+                            min = 0,max = 100,value = 0),
+                sliderInput(inputId = "change",label = "% change",
+                            min = -100,max = 100,value = 0)
+                ),
+            
+            mainPanel(
+              plotOutput('porosPlot')
+            )
+          )
+       ),
 
-tabPanel('Porosity Slider' ),  
+          
+        
+         
 tabPanel('Map', leafletOutput("map",width = '100%'))
 
 
@@ -155,12 +172,17 @@ server <- function(input, output) {
                              caption = 'Table 1: This table shows x.', #MU: adds a caption to the table
                              filter = "top") #MU: This places the filter at the top of the table
     #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
-    output$plot1 <- renderPlot({
+    output$plot1 <- renderPlot(
         ws3_upper_wells %>% filter(name == input$toview) %>%
             ggplot(aes(x = TIMESTAMP, y = value))+
-            geom_line()
+            geom_line())
       
+    output$porosPlot <- renderPlot({
+      x <- seq(from = 0, to = 100, by = 0.1)
+      y <- x*input$poros + input$change
+      plot(x,y)
     })
+
 
 
 
