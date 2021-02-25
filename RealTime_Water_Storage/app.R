@@ -112,36 +112,32 @@ ws9_upper_snowdat_hr <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/W
   select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) 
 
 # Define UI for application
-ui <- fluidPage(
-
-    # Application title
-    titlePanel("Realtime Watershed Data - Hubbard Brook"),
+ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
+  
 
         
-    
-    # Sidebar with daterange 
-    sidebarLayout(
-        sidebarPanel(
-            dateInput("startdate", label = "Start Date", val=""), #MU: Should we make the default start value the first data present in the data we read in?
-            dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
-            selectInput(inputId = "toview", label = "Select dataset to view:", 
-                        choices = unique(ws3_upper_wells$name), 
-                        selected = unique(ws3_upper_wells$name)[1]),
-            width = 3
-        ),
-
-        #main panel/tabs
-        mainPanel(
-           tabsetPanel(
-               tabPanel('About', h4("This app visualizes watershed data from Watershed 3 and 9 in the Hubbard
+#define tabs to be used in the app
+tabPanel('About', h4("This app visualizes watershed data from Watershed 3 and 9 in the Hubbard
                                     Brook Experimental Forest, as well as related snowpack and weather conditions, for a date range selected")),
-               tabPanel('Watershed Visualizations', plotOutput("plot1")),
-               tabPanel('Table' ,DTOutput("table")),
-               tabPanel('Map of Stations', leafletOutput("map",width = '100%'))
-           )
-        ) #mainPanel
-    )#sidebarLayout
-)#fluidPage
+tabPanel('Watershed Visualizations', plotOutput("plot1")),
+        sidebarPanel(width = 3,
+              dateInput("startdate", label = "Start Date", val=""), #MU: Should we make the default start value the first data present in the data we read in?
+              dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
+              selectInput(inputId = "toview", label = "Select dataset to view:", 
+                          choices = unique(ws3_upper_wells$name), 
+                          selected = unique(ws3_upper_wells$name)[1])
+  ),
+  
+tabPanel('Table' ,DTOutput("table")),
+
+
+  
+tabPanel('Map of Stations', leafletOutput("map",width = '100%'))
+
+
+
+))
+
 
 # Define server
 server <- function(input, output) {
