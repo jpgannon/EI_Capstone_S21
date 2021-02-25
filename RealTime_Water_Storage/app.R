@@ -117,8 +117,20 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
 
         
 #define tabs to be used in the app
-tabPanel('About', h4("This app visualizes watershed data from Watershed 3 and 9 in the Hubbard
-                                    Brook Experimental Forest, as well as related snowpack and weather conditions, for a date range selected.")),
+tabPanel('About',
+         fluidRow(
+           column(1, tags$h3("Watershed 3", align = "left")), #MU: Watershed 3 Label
+           column(5, tags$h3("Watershed 9", align = "right"))), #MU: Watershed 9 Label
+         fluidRow(
+           column(1, tags$img(src = "WS3map.png", align = "left", width = 340 , height = 230)), #MU: Watershed 3 Map
+           column(5, tags$img(src = "WS9map.png", align = "right", width = 340 , height = 230))), #MU: Watershed 9 Map
+         fluidRow(
+           tags$h4("This app visualizes data from Watershed 3 and 9 of the Hubbard
+                                    Brook Experimental Forest through graphs, a map showing where the data was collected,
+                   and a table. The data can also be filtered using the various filters found in each tab."))),
+        fluidRow(
+          tags$p("Map Credit: Hubbard Brook Experimental Forest")
+        ),
 tabPanel('Watershed Visualizations',
         sidebarLayout(
           sidebarPanel(width = 3,
@@ -161,7 +173,6 @@ tabPanel('Map', leafletOutput("map",width = '100%'))
 
 ))
 
-
 # Define server
 server <- function(input, output) {
     #----------------
@@ -183,10 +194,12 @@ server <- function(input, output) {
       plot(x,y)
     })
 
+    #MU: This is the calculations for porosity based on the input for the upper well data.
+    
+  #  standardizedData <- ws3_upper_wells %>% 
+  #    mutate(standardizedVals = value * input$poros)
 
 
-
-#---------------------------------------------
 # Plot map of station locations using leaflet
 #---------------------------------------------
 
