@@ -118,7 +118,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
         
 #define tabs to be used in the app
 tabPanel('About', h4("This app visualizes watershed data from Watershed 3 and 9 in the Hubbard
-                                    Brook Experimental Forest, as well as related snowpack and weather conditions, for a date range selected")),
+                                    Brook Experimental Forest, as well as related snowpack and weather conditions, for a date range selected.")),
 tabPanel('Watershed Visualizations',
         sidebarLayout(
           sidebarPanel(width = 3,
@@ -134,11 +134,11 @@ tabPanel('Watershed Visualizations',
         ) 
   ),
   
-tabPanel('Table' ,DTOutput("table")),
+tabPanel('Table View' ,DTOutput("table")),
 
 
 tabPanel('Porosity Slider' ),  
-tabPanel('Map of Stations', leafletOutput("map",width = '100%'))
+tabPanel('Map', leafletOutput("map",width = '100%'))
 
 
 
