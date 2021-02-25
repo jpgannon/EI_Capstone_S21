@@ -119,13 +119,19 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
 #define tabs to be used in the app
 tabPanel('About', h4("This app visualizes watershed data from Watershed 3 and 9 in the Hubbard
                                     Brook Experimental Forest, as well as related snowpack and weather conditions, for a date range selected")),
-tabPanel('Watershed Visualizations', plotOutput("plot1")),
-        sidebarPanel(width = 3,
+tabPanel('Watershed Visualizations',
+        sidebarLayout(
+          sidebarPanel(width = 3,
               dateInput("startdate", label = "Start Date", val=""), #MU: Should we make the default start value the first data present in the data we read in?
               dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
               selectInput(inputId = "toview", label = "Select dataset to view:", 
                           choices = unique(ws3_upper_wells$name), 
-                          selected = unique(ws3_upper_wells$name)[1])
+                          selected = unique(ws3_upper_wells$name)[1]),
+              fluid = TRUE),
+          mainPanel(
+            plotOutput("plot1")
+            )
+        ) 
   ),
   
 tabPanel('Table' ,DTOutput("table")),
