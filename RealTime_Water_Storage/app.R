@@ -137,7 +137,7 @@ tabPanel('Watershed Visualizations',
 tabPanel('Table' ,DTOutput("table")),
 
 
-  
+tabPanel('Porosity Slider', ),  
 tabPanel('Map of Stations', leafletOutput("map",width = '100%'))
 
 
@@ -159,6 +159,7 @@ server <- function(input, output) {
         ws3_upper_wells %>% filter(name == input$toview) %>%
             ggplot(aes(x = TIMESTAMP, y = value))+
             geom_line()
+      
     })
 
 
