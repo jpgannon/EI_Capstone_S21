@@ -3,7 +3,7 @@
 # Hubbard Brook Watershed sites 3 and 9 - snow, well, and other specific watershed data 
 #
 #
-# Author: Sam Lausten, Michelle Uchitel, Alison Walters
+# Authors: Sam Lausten, Michelle Uchitel, Alison Walters
 #
 #-------------------------------
 
