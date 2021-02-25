@@ -133,7 +133,8 @@ ui <- fluidPage(
         #main panel/tabs
         mainPanel(
            tabsetPanel(
-               tabPanel('About'),
+               tabPanel('About', h4("This app visualizes watershed data from Watershed 3 and 9 in the Hubbard
+                                    Brook Experimental Forest, as well as related snowpack and weather conditions, for a date range selected")),
                tabPanel('Watershed Visualizations', plotOutput("plot1")),
                tabPanel('Table' ,DTOutput("table")),
                tabPanel('Map of Stations', leafletOutput("map",width = '100%'))
