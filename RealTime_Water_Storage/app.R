@@ -15,7 +15,7 @@ library(lubridate)
 library(DT) #MU: Helpful for displaying data tables.
 library(tidyverse) #MU: I added tidyverse because it has ggplot2 and other good functions 
 library(grid)
-
+library(shinythemes)
 #reading in WS3 well data
 #setwd("/Volumes/GoogleDrive/My Drive/CLASSES/EI Capstone/EI_Capstone_S21")
 ws3_upper_wells <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_table_WS3upper_WS_3Up_wells.dat",
@@ -113,6 +113,7 @@ ws9_upper_snowdat_hr <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/W
 
 # Define UI for application
 ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
+                           theme = shinytheme('cosmo'),
   
 
         
