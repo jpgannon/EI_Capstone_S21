@@ -196,9 +196,10 @@ server <- function(input, output) {
 
     #MU: This is the calculations for porosity based on the input for the upper well data.
     
-  #  standardizedData <- ws3_upper_wells %>% 
-  #    mutate(standardizedVals = value * input$poros)
-
+    standardizedData <- reactive({
+      ws3_upper_wells %>% 
+      mutate(standardizedVals = value * input$poros)
+})
 
 # Plot map of station locations using leaflet
 #---------------------------------------------
