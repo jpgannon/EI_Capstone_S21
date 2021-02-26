@@ -52,18 +52,19 @@ RTD_Avg(8) - Resistance Temperature Detector 8
 RTD_Avg(9) - Resistance Temperature Detector 9
 Air_TempC_Avg (celcius) - the average temperature, I’m assuming it’s averaging the 9 temperatures from columns RTD1-9
 Depthraw_Avg - snow depths in a unit of measurement that is not listed
-Depthscaled_Avg (cm) - snow depths in centimeters
+Depthscaled_Avg (cm) - snow depths in centimeters - #snowpack height, need to filter out outliers
 
 Water_table_WS3upper_WS_3Up_wells.dat (Ground Water Sensor from Watershed 3)
-
+#dif function in vectors, if dif i and i +1 is > than abs value,
+#then I+1 = NA
 TIMESTAMP (time) - the timestamp of the time the data was collected
 RECORD (integer) - the record number, assigns a number to each record (?)
 Batt_Volt (volt) - the voltage of the battery that powers the sensor (?)
 ptemp_Max (celcius) - temperature measurement, I think it means max potential temperature (?)
 WS3_N1_psi (psi) - the pressure of the water or soil in PSI (?)
 WS3_N1_rawdepth (cm) - the depth of the water in cm (?)
-WS3_N1_depth_corr - the depth of the water in some unknown units
-WS3_N1_corr_depth (cm) - the depth of the water in cm
+WS3_N1_depth_corr - the depth of the water in some unknown units #constant - calculates how many cm above it, constant offset to convert above to below
+WS3_N1_corr_depth (cm) - the depth of the water in cm #corrected depth - fixed point down to water table
 WS3_N1_welltemp (celcius) - temperature in Celsius of the water (?)
 WS3_N2_psi (psi) - pressure of water in the soil PSI 2 (?)
 WS3_N2_rawdepth (cm) - the depth of the water in cm 2 (?)
