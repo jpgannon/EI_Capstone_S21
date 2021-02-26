@@ -76,11 +76,10 @@ ui <- fluidPage(
     tabPanel("Timeseries analysis",
           sidebarLayout(
             sidebarPanel(
-              checkboxInput("var1", "Watershed 3", FALSE),
-              checkboxInput("var2", "Watershed 9", FALSE),
+              selectInput("var1", "What well would you like to plot over time?", choices = unique(well_data$name), selected = unique(well_data$name)[1], multiple = TRUE),
+              
             ),
-            mainPanel(plotOutput("var1"),
-                      plotOutput("var2"))
+            mainPanel(plotOutput("var1"))
           )
  ),
     ###Creates tab and tab settings for Watershed 3
@@ -94,18 +93,13 @@ ui <- fluidPage(
 server <- function(input, output, sessions) {
   
   output$var1 <- renderPlot({
-    well_data %>% filter(well == 1) %>% 
+      well_data %>%  filter(name == input$var1) %>% 
       ggplot(aes(x = TIMESTAMP, y = value, color = "blue")) +
       geom_line()
     
   })
   
-  output$var2 <- renderPlot({
-    well_data %>% filter(well == 2) %>% 
-      ggplot(aes(x = TIMESTAMP, y = value, color = "red")) +
-      geom_line()
-    
-  })
+  
 }
 
 shinyApp(ui, server)
