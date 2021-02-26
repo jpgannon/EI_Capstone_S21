@@ -121,16 +121,20 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
 tabPanel('About',
          fluidRow(
            column(1, tags$h3("Watershed 3", align = "left")), #MU: Watershed 3 Label
-           column(5, tags$h3("Watershed 9", align = "right"))), #MU: Watershed 9 Label
+           column(10, tags$h3("Watershed 9", align = "right"))), #MU: Watershed 9 Label
          fluidRow(
            column(1, tags$img(src = "WS3map.png", align = "left", width = 340 , height = 230)), #MU: Watershed 3 Map
-           column(5, tags$img(src = "WS9map.png", align = "right", width = 340 , height = 230))), #MU: Watershed 9 Map
+           column(10, tags$img(src = "WS9map.png", align = "right", width = 340 , height = 230))), #MU: Watershed 9 Map
          fluidRow(
            tags$h4("This app visualizes data from Watershed 3 and 9 of the Hubbard
                                     Brook Experimental Forest through graphs, a map showing where the data was collected,
                    and a table. The data can also be filtered using the various filters found in each tab."))),
         fluidRow(
-          tags$p("Map Credit: Hubbard Brook Experimental Forest")
+          tags$p("Map Credit: Hubbard Brook Experimental Forest"),
+          tags$p("This application will attempt to:
+                    - Visualize Realtime and Past Watershed Data.
+                    - Create a user-friendly dashboard that allows for data exploration.
+                    - Assist Hubbard Brook Scientists in testing hypothetical data and results")
         ),
 tabPanel('Watershed Visualizations',
         sidebarLayout(
