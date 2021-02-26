@@ -6,10 +6,13 @@ library(rgdal)
 library(tidyr)
 library(ggplot2)
 library(lubridate)
+library(tidyverse)
 library(shinyWidgets)
 
 Litterfall <-
-    read.csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/Litterfall.csv")
+    read_csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/Litterfall.csv") %>%
+  mutate(Treat = paste(Stand, Treatment))
+
 SoilRespiration <-
     read.csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/SoilResp.csv")
 StandLocations <-
@@ -17,8 +20,6 @@ StandLocations <-
 
 CleanSoilResp <- SoilRespiration %>% select(date, stand, flux, treatment) %>%
     mutate(date = mdy(date))
-#CleanLitter <- Litterfall %>% select(Year, Stand, Treatment, whole.mass, Site) 
-
   
 
 ui <- dashboardPage(
@@ -50,17 +51,11 @@ ui <- dashboardPage(
                 box(width = 3, 
                     selectInput("Treatment", label = em("Select Treatment:",
                     style = "text-align:center;color black;font-size:100%"),
-                    unique(Litterfall$Treatment), selected = "P")),
-                box(width = 3, 
-                    selectizeInput("Site", label = em("Select Site:",
-                                                      style = "text-align:center;color black;font-size:100%"),
-                                   unique(Litterfall$Site), selected = "BEF"),
-                    selectize=TRUE),
-                #pickerInput
+                    unique(Litterfall$Treatment), multiple = TRUE, selected = c("N", "P", "NP", "Ca", "C"))),
                 box(width = 3, 
                     selectizeInput("Stand", label = em("Select Stand:",
                                  style = "text-align:center;color black;font-size:100%"),
-                                choices = unique(Litterfall$Stand), selected = "C1"),
+                                choices = unique(Litterfall$Stand), multiple = TRUE, selected = "C1"),
         
                     ),
                 box(plotOutput("timeseries_plot"), width = 12),
@@ -100,20 +95,20 @@ server <- function(input, output) {
         max <- input$Year[2]
         Treatment <- input$Treatment
         Stand <- input$Stand
-        Site <- input$Site
-       
+
         
         Litterfall %>%
             filter(Year >= min & Year <= max) %>%
             filter(Treatment == input$Treatment) %>%
-            filter(Site == input$Site) %>%
             filter(Stand == input$Stand) %>%
-            ggplot(aes(x=Year, y=whole.mass)) +
-            geom_line( color = "black") +
+            ggplot(aes(x=Year, y=whole.mass, color = Treat)) +
+            geom_line()+
             theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
             labs(title ="Time Series Litterfall",
                  x = "Year",
-                 y = "Mass (g litter /m2)")}) 
+                 y = "Mass (g litter /m2)") +
+          facet_wrap(facets = "Stand", ncol = 1)
+          }) 
 
 }
 
