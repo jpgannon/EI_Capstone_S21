@@ -93,9 +93,14 @@ ui <- fluidPage(
 server <- function(input, output, sessions) {
   
   output$var1 <- renderPlot({
-      well_data %>%  filter(name == input$var1) %>% 
-      ggplot(aes(x = TIMESTAMP, y = value, color = "blue")) +
-      geom_line()
+      well_data %>%  filter(name %in% input$var1) %>% 
+      ggplot(aes(x = TIMESTAMP, y = value, color = name)) +
+      geom_line() +
+      labs(title = "Timeseries of Well Data",
+           x = "Time", 
+           y = "Depth (cm)",
+           fill = "Wells") +
+      theme_bw()
     
   })
   
