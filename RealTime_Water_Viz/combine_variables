@@ -6,6 +6,17 @@ library(dplyr)
 
 
 
+#New variable names:
+#well_corr_depth
+#snow_15m_H20_content1
+#snow_15m_H20_content2
+#snow_15m_Depthscaled
+#snow_hr_Content2_avg
+#snow_hr_Depthscaled_AVG
+
+
+
+
 ####Combininb Well Corr Depth
 well9_corr_depth <- read_csv("Water_table_WS9_WS_9_wells.dat",
                   skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="Batt_Volt", 
@@ -85,3 +96,85 @@ well3_snowdat_15m_content2 <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_15mi
 
 
 snow_15m_H20_content2 <- bind_rows(well9_snowdat_15m_content2 , well3_snowdat_15m_content2 , .id = "15m_Content2")
+
+
+
+#Combining 15m Snowdat Depthscaled 
+well9_snowdat_15m_Depthscaled <- read_csv("Water_table_WS9_WS_9_snowdat_15min.dat",
+            skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="Batt_Volt", 
+                                    X4= "ptemp" , X5= "W9_H2O_Content_1", X6= "W9_H2O_Content_2", 
+                                    X7= "Avg_Period_1", X8= "Avg_Period_2", X9=  "RTD(1)" , 
+                                    X10= "RTD(2)", X11= "RTD(3)", X12=  "RTD(4)" , X13= "RTD(5)" , 
+                                    X14= "RTD(6)" , X15= "RTD(7)" , X16= "RTD(8)", X17= "RTD(9)" , 
+                                    X18= "Air_TempC_Avg", X19 = "Depthraw", X20= "W9_Depthscaled"))%>% 
+  select(TIMESTAMP, W9_Depthscaled) %>% 
+  pivot_longer(cols = c(W9_Depthscaled))
+
+
+
+well3_snowdat_15m_Depthscaled <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_15min.dat",
+            skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="Batt_Volt", X4= "ptemp" ,
+                                    X5= "W3_H2O_Content_1", X6= "W3_H2O_Content_2", X7= "Avg_Period_1",
+                                    X8= "Avg_Period_2", X9=  "RTD(1)" , X10= "RTD(2)", X11= "RTD(3)",
+                                    X12=  "RTD(4)" , X13= "RTD(5)" , X14= "RTD(6)" , X15= "RTD(7)" , X16= "RTD(8)",
+                                    X17= "RTD(9)" , X18= "Air_TempC_Avg", X19 = "Depthraw", X20= "W3_Depthscaled"))%>% 
+  select(TIMESTAMP, W3_Depthscaled) %>% 
+  pivot_longer(cols = c(W3_Depthscaled))
+
+
+snow_15m_Depthscaled <- bind_rows(well9_snowdat_15m_Depthscaled , well3_snowdat_15m_Depthscaled , .id = "15m_Depthscaled")
+
+
+
+#Combining 1 Hour snowdat H2O Content2_AVG
+
+well9_snowdat_hr_content2_AVG <- read_csv("Water_table_WS9_WS_9_snowdat_hr.dat",
+                             skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="H2O_Content_1_Avg", 
+                                                     X4= "W9_H2O_Content_2_Avg", X5= "Avg_Period_1_Avg", X6= "Avg_Period_2_Avg", X7="RTD_Avg(1)", 
+                                                     X8= "RTD_Avg(2)", X9=  "RTD_Avg(3)" , X10= "RTD_Avg(4)", X11= "RTD_Avg(5)", 
+                                                     X12=  "RTD_Avg(6)" , X13= "RTD_Avg(7)" , X14= "RTD_Avg(8)" , X15= "RTD_Avg(9)" ,
+                                                     X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , X18= "Depthscaled_Avg"))%>% 
+  select(TIMESTAMP, W9_H2O_Content_2_Avg) %>% 
+  pivot_longer(cols = c(W9_H2O_Content_2_Avg))
+
+
+
+well3_snowdat_hr_content2_AVG <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_hr.dat",
+                             skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="H2O_Content_1_Avg",
+                                                     X4= "W3_H2O_Content_2_Avg", X5= "Avg_Period_1_Avg", X6= "Avg_Period_2_Avg",
+                                                     X7="RTD_Avg(1)", X8= "RTD_Avg(2)", X9=  "RTD_Avg(3)" , X10= "RTD_Avg(4)",
+                                                     X11= "RTD_Avg(5)", X12=  "RTD_Avg(6)" , X13= "RTD_Avg(7)" , X14= "RTD_Avg(8)" ,
+                                                     X15= "RTD_Avg(9)" , X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , X18= "Depthscaled_Avg"))%>% 
+  select(TIMESTAMP, W3_H2O_Content_2_Avg) %>% 
+  pivot_longer(cols = c(W3_H2O_Content_2_Avg))
+
+
+snow_hr_Content2_avg <- bind_rows(well9_snowdat_hr_content2_AVG , well3_snowdat_hr_content2_AVG , .id = "HR_Content2_AVG")
+
+
+
+
+#Comgining 1 hour snow_dat Depthscaled_AVG
+
+well9_snowdat_hr_depthscaled_AVG <- read_csv("Water_table_WS9_WS_9_snowdat_hr.dat",
+                                          skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="H2O_Content_1_Avg", 
+                                                                  X4= "W9_H2O_Content_2_Avg", X5= "Avg_Period_1_Avg", X6= "Avg_Period_2_Avg", X7="RTD_Avg(1)", 
+                                                                  X8= "RTD_Avg(2)", X9=  "RTD_Avg(3)" , X10= "RTD_Avg(4)", X11= "RTD_Avg(5)", 
+                                                                  X12=  "RTD_Avg(6)" , X13= "RTD_Avg(7)" , X14= "RTD_Avg(8)" , X15= "RTD_Avg(9)" ,
+                                                                  X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , X18= "W9_Depthscaled_Avg"))%>% 
+  select(TIMESTAMP, W9_Depthscaled_Avg) %>% 
+  pivot_longer(cols = c(W9_Depthscaled_Avg))
+
+
+
+well3_snowdat_hr_Depthscaled_AVG <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_hr.dat",
+                                          skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="H2O_Content_1_Avg",
+                                                                  X4= "W3_H2O_Content_2_Avg", X5= "Avg_Period_1_Avg", X6= "Avg_Period_2_Avg",
+                                                                  X7="RTD_Avg(1)", X8= "RTD_Avg(2)", X9=  "RTD_Avg(3)" , X10= "RTD_Avg(4)",
+                                                                  X11= "RTD_Avg(5)", X12=  "RTD_Avg(6)" , X13= "RTD_Avg(7)" , X14= "RTD_Avg(8)" ,
+                                                                  X15= "RTD_Avg(9)" , X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , X18= "W3_Depthscaled_Avg"))%>% 
+  select(TIMESTAMP, W3_Depthscaled_Avg) %>% 
+  pivot_longer(cols = c(W3_Depthscaled_Avg))
+
+
+snow_hr_Depthscaled_AVG <- bind_rows(well9_snowdat_hr_content2_AVG , well3_snowdat_hr_content2_AVG , .id = "HR_Depthscaled_AVG")
