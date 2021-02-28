@@ -7,11 +7,11 @@ library(tidyr)
 library(ggplot2)
 library(lubridate)
 library(tidyverse)
-library(shinyWidgets)
+library(ggthemes)
 
 Litterfall <-
     read_csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/Litterfall.csv") %>%
-  mutate(Treat = paste(Stand, Treatment))
+  mutate(Treatment = paste(Treatment))
 
 SoilRespiration <-
     read.csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/SoilResp.csv")
@@ -101,13 +101,14 @@ server <- function(input, output) {
             filter(Year >= min & Year <= max) %>%
             filter(Treatment == input$Treatment) %>%
             filter(Stand == input$Stand) %>%
-            ggplot(aes(x=Year, y=whole.mass, color = Treat)) +
-            geom_line()+
+            ggplot(aes(x=Year, y=whole.mass, color = Treatment)) +
+            geom_point(size = 3) +
+            #geom_line(size = 1.5) +
             theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
             labs(title ="Time Series Litterfall",
                  x = "Year",
                  y = "Mass (g litter /m2)") +
-          facet_wrap(facets = "Stand", ncol = 1)
+          facet_wrap(facets = "Stand", ncol = 4)
           }) 
 
 }
