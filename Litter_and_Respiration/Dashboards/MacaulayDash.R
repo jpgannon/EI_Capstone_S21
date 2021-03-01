@@ -8,11 +8,13 @@ library(ggplot2)
 
 
 Litterfall <-
-    read.csv("~/SENIOR_YEAR/2021_SPRING/Capstone/EI_Capstone_S21/Litter_and_Respiration/Litterfall.csv")
+    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/Litterfall.csv")
 SoilRespiration <-
-    read.csv("~/SENIOR_YEAR/2021_SPRING/Capstone/EI_Capstone_S21/Litter_and_Respiration/SoilResp.csv")
+    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/SoilResp.csv")
 StandLocations <-
-    read.csv("~/SENIOR_YEAR/2021_SPRING/Capstone/EI_Capstone_S21/Litter_and_Respiration/StandLocations.csv")
+    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/StandLocations.csv")
+lat_long <-
+    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/lat_long.csv")
 
 #Filter soil resp data and converted to correct date format 
 CleanSoilResp <- SoilRespiration %>% select(date, stand, flux, treatment) %>%
