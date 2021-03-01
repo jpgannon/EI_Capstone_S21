@@ -29,7 +29,7 @@ ws3_upper_wells <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_
                                                 X17="WS3_42_4_d2_depth_corr",X18="WS3_42_4_d2_corr_depth",
                                                 X19="WS3_42_4_d2_welltemp"))%>%
     select(TIMESTAMP, WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth) %>%
-    pivot_longer(cols = c(WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth))
+  pivot_longer(cols = c(WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth))
 
 
 #reading in WS9 well data
@@ -45,8 +45,7 @@ ws9_upper_wells <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_
                                                     X15= "HB176d_psi" , X16= "HB176d_rawdepth", 
                                                     X17= "HB176d_depth_corr" , X18= "HB176d_corr_depth", 
                                                     X19 = "HB176d_welltemp"))%>%
-  select(TIMESTAMP, HB156_corr_depth, HB179s_corr_depth, HB176d_corr_depth) %>%
-  pivot_longer(cols = c(HB156_corr_depth, HB179s_corr_depth, HB176d_corr_depth))
+  select(TIMESTAMP, HB156_corr_depth, HB179s_corr_depth, HB176d_corr_depth) 
 
 
 
@@ -111,6 +110,7 @@ ws9_upper_snowdat_hr <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/W
                                                          X17= "Depthraw_Avg" , X18= "Depthscaled_Avg"))%>%
   select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) 
 
+
 # Define UI for application
 ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
                            theme = shinytheme('cosmo'),
@@ -158,7 +158,7 @@ tabPanel('Porosity Slider',
          sidebarLayout(
             sidebarPanel(width = 4,
                 sliderInput(inputId = "poros",label = "Porosity:",
-                            min = 0,max = 100,value = 0),
+                            min = 0,max = 1,value = 0.5, step = 0.01),
                 sliderInput(inputId = "change",label = "% change",
                             min = -100,max = 100,value = 0)
                 ),
@@ -178,12 +178,43 @@ tabPanel('Map', leafletOutput("map",width = '100%'))
 
 ))
 
+
+
 # Define server
 server <- function(input, output) {
     #----------------
     # read in cleaned watershed data
     # ---------------
-    output$table <- renderDT(ws3_upper_snowdat_hr, #MU: When we do the calculations we can put them in one dataset and output that.
+
+  #MU: standardized well ws3 data to mm H2O
+  #standardized_Well_WS3 <-  ws3_upper_wells %>% 
+  #    mutate(standardized_well_1 = ((WS3_N1_corr_depth * 10) * input$poros)) %>% 
+  #    mutate(standardized_well_2 = ((WS3_N2_corr_depth * 10) * input$poros)) %>% 
+  #    mutate(standardized_deep_well = ((WS3_42_4_d2_corr_depth * 10) * input$poros)) %>% 
+  #    select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
+  
+  
+  #Mu: standardized well ws9 data to mm H2O
+  standardized_Well_WS9 <-  reactive(
+    ws9_upper_wells %>% 
+    mutate(standardized_well_1 = ((HB156_corr_depth * 10) * input$poros)) %>% 
+    mutate(standardized_well_2 = , ((HB179s_corr_depth * 10) * input$poros)) %>% 
+    mutate(standardized_deep_well = ((HB176d_corr_depth * 10) * input$poros)) %>% 
+    select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
+  )
+  #MU: standardized snow ws3 data to mm H2O
+  standardized_SnowHr_WS3 <-  reactive(
+    ws3_upper_snowdat_hr %>% 
+    mutate(standardized_snow = (((H2O_Content_1_Avg + H2O_Content_2_Avg) / 2) * (Depthscaled_Avg * 10)) * input$density)
+  )
+  
+  #MU: standardized snow ws9 data to mm H2O
+  standardized_SnowHr_WS9 <- reactive(
+    ws9_upper_snowdat_hr %>% 
+    mutate(standardized_snow = (((H2O_Content_1_Avg + H2O_Content_2_Avg) / 2) * (Depthscaled_Avg * 10)) * input$density)
+ )
+  
+    output$table <- renderDT(standardized_Well_WS9, #MU: When we do the calculations we can put them in one dataset and output that.
                              class = "display", #MU: this is the style of the table
                              caption = 'Table 1: This table shows x.', #MU: adds a caption to the table
                              filter = "top") #MU: This places the filter at the top of the table
@@ -199,12 +230,6 @@ server <- function(input, output) {
       plot(x,y)
     })
 
-    #MU: This is the calculations for porosity based on the input for the upper well data.
-    
-    standardizedData <- reactive({
-      ws3_upper_wells %>% 
-      mutate(standardizedVals = value * input$poros)
-})
 
 # Plot map of station locations using leaflet
 #---------------------------------------------
