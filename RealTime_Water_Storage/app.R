@@ -187,37 +187,38 @@ server <- function(input, output) {
     # ---------------
 
   #MU: standardized well ws3 data to mm H2O
-  #standardized_Well_WS3 <-  ws3_upper_wells %>% 
-  #    mutate(standardized_well_1 = ((WS3_N1_corr_depth * 10) * input$poros)) %>% 
-  #    mutate(standardized_well_2 = ((WS3_N2_corr_depth * 10) * input$poros)) %>% 
-  #    mutate(standardized_deep_well = ((WS3_42_4_d2_corr_depth * 10) * input$poros)) %>% 
-  #    select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
+ # standardized_Well_WS3 <-  ws3_upper_wells %>% 
+  #  mutate(standardized_well_1 = ((WS3_N1_corr_depth * 10) * input$poros)) %>% 
+  #  mutate(standardized_well_2 = ((WS3_N2_corr_depth * 10) * input$poros)) %>% 
+  #  mutate(standardized_deep_well = ((WS3_42_4_d2_corr_depth * 10) * input$poros)) %>%
+   # select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
   
   
   #Mu: standardized well ws9 data to mm H2O
-  standardized_Well_WS9 <-  reactive(
+  standardized_Well_WS9 <-  reactive({
     ws9_upper_wells %>% 
     mutate(standardized_well_1 = ((HB156_corr_depth * 10) * input$poros)) %>% 
-    mutate(standardized_well_2 = , ((HB179s_corr_depth * 10) * input$poros)) %>% 
-    mutate(standardized_deep_well = ((HB176d_corr_depth * 10) * input$poros)) %>% 
+    mutate(standardized_well_2 = ((HB179s_corr_depth * 10) * input$poros)) %>% 
+    mutate(standardized_deep_well = ((HB176d_corr_depth * 10) * input$poros)) %>%
     select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
-  )
+  })
   #MU: standardized snow ws3 data to mm H2O
-  standardized_SnowHr_WS3 <-  reactive(
+  standardized_SnowHr_WS3 <-  reactive({
     ws3_upper_snowdat_hr %>% 
     mutate(standardized_snow = (((H2O_Content_1_Avg + H2O_Content_2_Avg) / 2) * (Depthscaled_Avg * 10)) * input$density)
-  )
+  })
   
   #MU: standardized snow ws9 data to mm H2O
-  standardized_SnowHr_WS9 <- reactive(
+  standardized_SnowHr_WS9 <- reactive({
     ws9_upper_snowdat_hr %>% 
     mutate(standardized_snow = (((H2O_Content_1_Avg + H2O_Content_2_Avg) / 2) * (Depthscaled_Avg * 10)) * input$density)
- )
+ })
   
-    output$table <- renderDT(standardized_Well_WS9, #MU: When we do the calculations we can put them in one dataset and output that.
-                             class = "display", #MU: this is the style of the table
-                             caption = 'Table 1: This table shows x.', #MU: adds a caption to the table
-                             filter = "top") #MU: This places the filter at the top of the table
+  output$table <- DT::renderDataTable({DT::datatable(standardized_Well_WS9(), #MU: When we do the calculations we can put them in one dataset and output that.
+                  class = "display", #MU: this is the style of the table
+                  caption = 'Table 1: This table shows x.', #MU: adds a caption to the table
+                  filter = "top")
+      })#MU: This places the filter at the top of the table
     #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
     output$plot1 <- renderPlot(
         ws3_upper_wells %>% filter(name == input$toview) %>%
