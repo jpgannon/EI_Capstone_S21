@@ -11,7 +11,8 @@ library(ggthemes)
 
 Litterfall <-
     read_csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/Litterfall.csv") %>%
-  mutate(Treatment = paste(Treatment))
+  mutate(Treatment = paste(Treatment)) 
+
 
 SoilRespiration <-
     read.csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/SoilResp.csv")
