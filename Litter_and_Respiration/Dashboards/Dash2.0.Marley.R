@@ -60,7 +60,7 @@ ui <- dashboardPage(
         
                     ),
                 box(plotOutput("timeseries_plot"), width = 12),
-
+                box(plotOutput("litterfall_box"), width = 12)
                 ),
         
         tabItem(tabName = "Soil_Respiration",
@@ -77,40 +77,50 @@ ui <- dashboardPage(
 )
 
 server <- function(input, output) {
-    output$flux_ts_plot <- renderPlot({
-        startdate <- input$date[1]
-        enddate <- input$date[2]
-        
-        CleanSoilResp %>%
-            filter(date >= startdate & date <= enddate)%>%
-            ggplot(aes(x = date, y = flux))+
-            geom_line(color = "black")+
-            labs(title = "Soil Respiration Flux", 
-                 x = "Date", 
-                 y = "CO2 efflux per unit area (μg CO2/m2/s)") +
-            geom_smooth(method = "lm")
-    })
-    
     output$timeseries_plot <- renderPlot({
         min <- input$Year[1]
         max <- input$Year[2]
         Treatment <- input$Treatment
         Stand <- input$Stand
-#
         
         Litterfall %>%
             filter(Year >= min & Year <= max) %>%
             filter(Treatment == input$Treatment) %>%
             filter(Stand == input$Stand) %>%
             ggplot(aes(x=Year, y=whole.mass, color = Treatment)) +
-            geom_point(size = 3) +
-            #geom_line(size = 1.5) +
+            #geom_point(size = 3) +
+            geom_line(size = 1) +
+            theme_bw() +
             theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
-            labs(title ="Time Series Litterfall",
+            labs(title ="Time vs. Litterfall Mass Time Series",
                  x = "Year",
                  y = "Mass (g litter /m2)") +
-          facet_wrap(facets = "Stand", ncol = 4)
-          }) 
+          facet_wrap(facets = "Stand", ncol = 5)
+          })
+    
+    output$litterfall_box <- renderPlot({
+      min <- input$Year[1]
+      max <- input$Year[2]
+      Treatment <- input$Treatment
+      Stand <- input$Stand
+      
+        Litterfall %>%
+          filter(Year >= min & Year <= max) %>%
+          filter(Treatment == input$Treatment) %>%
+          filter(Stand == input$Stand) %>%
+        ggplot(aes(x=Treatment, y=whole.mass, color = Treatment)) +
+        geom_boxplot(outlier.colour = "red", outlier.shape = 4,
+                     outlier.size = 5, lwd = 1.5) +
+        theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+        theme_bw() +
+        labs(title ="Litterfall Mass vs. Treatment Type Boxplot",
+             x = "Treatment",
+             y = "Mass (g litter /m2)") +
+        facet_wrap(facets = "Stand", ncol = 5)
+      
+    })
+
+        
 
 }
 
