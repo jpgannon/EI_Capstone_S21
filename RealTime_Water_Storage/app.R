@@ -137,37 +137,50 @@ tabPanel('About',
                     - Assist Hubbard Brook Scientists in testing hypothetical data and results.")
         )),
 tabPanel('Watershed Visualizations',
-        sidebarLayout(
-          sidebarPanel(width = 3,
-              dateInput("startdate", label = "Start Date", val=""), #MU: Should we make the default start value the first data present in the data we read in?
-              dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
-              selectInput(inputId = "toview", label = "Select dataset to view:", 
-                          choices = unique(ws3_upper_wells$name), 
-                          selected = unique(ws3_upper_wells$name)[1]),
-              fluid = TRUE),
-          mainPanel(
-            plotOutput("plot1")
-            )
-        ) 
-  ),
+         sidebarLayout(
+           sidebarPanel(width = 3,
+                        dateInput("startdate", label = "Start Date", val= "2020-12-14"), #MU: Should we make the default start value the first data present in the data we read in?
+                        dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
+                        selectInput(inputId = "toview", label = "Select dataset to view:", 
+                                    choices = unique(ws3_upper_wells$name), 
+                                    selected = unique(ws3_upper_wells$name)[1]),
+                        sliderInput(inputId = "poros",label = "Porosity:",
+                                    min = 0,max = 1,value = 0.5, step = 0.01),
+                        fluid = TRUE),
+           mainPanel(
+             plotOutput("plot1")
+           )
+         ) 
+      ),
+
+  
+tabPanel('Porosity Slider', 
+         sidebarLayout(
+           sidebarPanel(width = 4,
+                        sliderInput(inputId = "poros",label = "Porosity:",
+                                    min = 0,max = 1,value = 0.5, step = 0.01),
+                        sliderInput(inputId = "change",label = "% change",
+                                    min = -100,max = 100,value = 0)
+           ),
+           
+           mainPanel(
+             plotOutput('porosPlot')
+           )
+         )
+      ),
+
+       
+      
+
   
 tabPanel('Table View' ,DTOutput("table")),
 
 #just experimental, not close to being real calculations - SL
-tabPanel('Porosity Slider', 
-         sidebarLayout(
-            sidebarPanel(width = 4,
-                sliderInput(inputId = "poros",label = "Porosity:",
-                            min = 0,max = 1,value = 0.5, step = 0.01),
-                sliderInput(inputId = "change",label = "% change",
-                            min = -100,max = 100,value = 0)
-                ),
-            
-            mainPanel(
-              plotOutput('porosPlot')
-            )
-          )
-       ),
+#scratch this
+#tabPanel('Porosity Slider', 
+
+        
+       
 
           
         
@@ -220,10 +233,12 @@ server <- function(input, output) {
                   filter = "top")
       })#MU: This places the filter at the top of the table
     #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
-    output$plot1 <- renderPlot(
-        ws3_upper_wells %>% filter(name == input$toview) %>%
+    output$plot1 <- renderPlot({
+        ws3_upper_wells %>% 
+        filter(name == input$toview & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>%
             ggplot(aes(x = TIMESTAMP, y = value))+
-            geom_line())
+            geom_line()
+      })
       
     output$porosPlot <- renderPlot({
       x <- seq(from = 0, to = 100, by = 0.1)
