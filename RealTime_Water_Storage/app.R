@@ -152,8 +152,9 @@ tabPanel('Watershed Visualizations',
                         selectInput(inputId = "toview", label = "Select dataset to view:", 
                                     choices = unique(ws3_upper_wells$name), 
                                     selected = unique(ws3_upper_wells$name)[1]),
-                        sliderInput(inputId = "poros",label = "Porosity:",
-                                    min = 0,max = 1,value = 0.5, step = 0.01),
+                        numericInput("poros","Porosity:",
+                                   0.1, step = 0.1, min = 0, max = 1),
+                        verbatimTextOutput("value"),
                         fluid = TRUE),
            mainPanel(
              plotOutput("plot1")
