@@ -37,7 +37,6 @@ ui <- dashboardPage(
                 h1("Home Page, desciption of app and how to use will be placed here")),
         tabItem(tabName = "Map",
                 h1("Map")),
-        
         tabItem(tabName = "Litterfall",
                 h1("Litterfall"),
                 box(width = 3,
@@ -71,7 +70,7 @@ ui <- dashboardPage(
                                                min = "2008-07-01",
                                                max = "2020-07-25")
                 ),
-                box(plotOutput("flux_ts_plot"), width = 5),
+                box(plotOutput("flux_ts_plot"), width = 5)
         )
     )),
 )
@@ -80,16 +79,16 @@ server <- function(input, output) {
     output$timeseries_plot <- renderPlot({
         min <- input$Year[1]
         max <- input$Year[2]
-        Treatment <- input$Treatment
-        Stand <- input$Stand
+        Treatmentselection <- input$Treatment
+        Standselection <- input$Stand
         
         Litterfall %>%
             filter(Year >= min & Year <= max) %>%
-            filter(Treatment == input$Treatment) %>%
-            filter(Stand == input$Stand) %>%
-            ggplot(aes(x=Year, y=whole.mass, color = Treatment)) +
-            #geom_point(size = 3) +
-            geom_line(size = 1) +
+          filter(Stand %in% Standselection & Treatment %in% Treatmentselection) %>%
+          
+            ggplot(aes(x = Year, group = interaction(Treatment, Year), y = whole.mass, color = Treatment)) +
+            geom_boxplot(size = 1) +
+            geom_point(size = 1) +
             theme_bw() +
             theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
             labs(title ="Time vs. Litterfall Mass Time Series",
@@ -101,13 +100,12 @@ server <- function(input, output) {
     output$litterfall_box <- renderPlot({
       min <- input$Year[1]
       max <- input$Year[2]
-      Treatment <- input$Treatment
-      Stand <- input$Stand
+      Treatmentselection <- input$Treatment
+      Standselection <- input$Stand
       
         Litterfall %>%
           filter(Year >= min & Year <= max) %>%
-          filter(Treatment == input$Treatment) %>%
-          filter(Stand == input$Stand) %>%
+          filter(Stand %in% Standselection & Treatment %in% Treatmentselection) %>%
         ggplot(aes(x=Treatment, y=whole.mass, color = Treatment)) +
         geom_boxplot(outlier.colour = "red", outlier.shape = 4,
                      outlier.size = 5, lwd = 1.5) +
@@ -119,8 +117,6 @@ server <- function(input, output) {
         facet_wrap(facets = "Stand", ncol = 5)
       
     })
-
-        
 
 }
 
