@@ -28,9 +28,12 @@ ws3_upper_wells <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_
                                                 X15="WS3_42_4_d2_psi",X16="WS3_42_4_d2_rawdepth",
                                                 X17="WS3_42_4_d2_depth_corr",X18="WS3_42_4_d2_corr_depth",
                                                 X19="WS3_42_4_d2_welltemp"))%>%
-    select(TIMESTAMP, WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth) %>%
-  pivot_longer(cols = c(WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth))
+    select(TIMESTAMP, WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth)  
 
+ws3_upper_wells <-  ws3_upper_wells %>% 
+                    aggregate(list(TIME = cut(ws3_upper_wells$TIMESTAMP, breaks="hour")), 
+                            mean, na.rm = TRUE) %>%  #MU: I think I aggregated this correctly so it shows hourly data but not positive. 
+                    select(TIME, WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth)
 
 #reading in WS9 well data
 
@@ -46,6 +49,11 @@ ws9_upper_wells <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_
                                                     X17= "HB176d_depth_corr" , X18= "HB176d_corr_depth", 
                                                     X19 = "HB176d_welltemp"))%>%
   select(TIMESTAMP, HB156_corr_depth, HB179s_corr_depth, HB176d_corr_depth) 
+
+ws9_upper_wells <-  ws9_upper_wells %>% 
+  aggregate(list(TIME = cut(ws9_upper_wells$TIMESTAMP, breaks="hour")), 
+            mean, na.rm = TRUE) %>%  #MU: I think I aggregated this correctly so it shows hourly data but not positive. 
+  select(TIME, HB156_corr_depth, HB179s_corr_depth, HB176d_corr_depth)
 
 
 
@@ -137,40 +145,26 @@ tabPanel('About',
                     - Assist Hubbard Brook Scientists in testing hypothetical data and results.")
         )),
 tabPanel('Watershed Visualizations',
-        sidebarLayout(
-          sidebarPanel(width = 3,
-              dateInput("startdate", label = "Start Date", val=""), #MU: Should we make the default start value the first data present in the data we read in?
-              dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
-              selectInput(inputId = "toview", label = "Select dataset to view:", 
-                          choices = unique(ws3_upper_wells$name), 
-                          selected = unique(ws3_upper_wells$name)[1]),
-              fluid = TRUE),
-          mainPanel(
-            plotOutput("plot1")
-            )
-        ) 
-  ),
+         sidebarLayout(
+           sidebarPanel(width = 3,
+                        dateInput("startdate", label = "Start Date", val= "2020-12-14"), #MU: Should we make the default start value the first data present in the data we read in?
+                        dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
+                        selectInput(inputId = "toview", label = "Select dataset to view:", 
+                                    choices = unique(ws3_upper_wells$name), 
+                                    selected = unique(ws3_upper_wells$name)[1]),
+                        numericInput("poros","Porosity:",
+                                   0.1, step = 0.1, min = 0, max = 1),
+                        verbatimTextOutput("value"),
+                        fluid = TRUE),
+           mainPanel(
+             plotOutput("plot1")
+           )
+         ) 
+      ),
+
   
 tabPanel('Table View' ,DTOutput("table")),
 
-#just experimental, not close to being real calculations - SL
-tabPanel('Porosity Slider', 
-         sidebarLayout(
-            sidebarPanel(width = 4,
-                sliderInput(inputId = "poros",label = "Porosity:",
-                            min = 0,max = 1,value = 0.5, step = 0.01),
-                sliderInput(inputId = "change",label = "% change",
-                            min = -100,max = 100,value = 0)
-                ),
-            
-            mainPanel(
-              plotOutput('porosPlot')
-            )
-          )
-       ),
-
-          
-        
          
 tabPanel('Map', leafletOutput("map",width = '100%'))
 
@@ -187,42 +181,48 @@ server <- function(input, output) {
     # ---------------
 
   #MU: standardized well ws3 data to mm H2O
-  #standardized_Well_WS3 <-  ws3_upper_wells %>% 
-  #    mutate(standardized_well_1 = ((WS3_N1_corr_depth * 10) * input$poros)) %>% 
-  #    mutate(standardized_well_2 = ((WS3_N2_corr_depth * 10) * input$poros)) %>% 
-  #    mutate(standardized_deep_well = ((WS3_42_4_d2_corr_depth * 10) * input$poros)) %>% 
-  #    select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
+ # standardized_Well_WS3 <-  ws3_upper_wells %>% 
+  #  mutate(standardized_well_1 = ((WS3_N1_corr_depth * 10) * input$poros)) %>% 
+  #  mutate(standardized_well_2 = ((WS3_N2_corr_depth * 10) * input$poros)) %>% 
+  #  mutate(standardized_deep_well = ((WS3_42_4_d2_corr_depth * 10) * input$poros)) %>%
+   # select(TIME, standardized_well_1, standardized_well_2, standardized_deep_well)
   
   
   #Mu: standardized well ws9 data to mm H2O
-  standardized_Well_WS9 <-  reactive(
+  standardized_Well_WS9 <-  reactive({
     ws9_upper_wells %>% 
     mutate(standardized_well_1 = ((HB156_corr_depth * 10) * input$poros)) %>% 
-    mutate(standardized_well_2 = , ((HB179s_corr_depth * 10) * input$poros)) %>% 
-    mutate(standardized_deep_well = ((HB176d_corr_depth * 10) * input$poros)) %>% 
-    select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
-  )
+    mutate(standardized_well_2 = ((HB179s_corr_depth * 10) * input$poros)) %>% 
+    mutate(standardized_deep_well = ((HB176d_corr_depth * 10) * input$poros)) %>%
+    select(TIME, standardized_well_1, standardized_well_2, standardized_deep_well)
+  })
   #MU: standardized snow ws3 data to mm H2O
-  standardized_SnowHr_WS3 <-  reactive(
+  standardized_SnowHr_WS3 <-  reactive({
     ws3_upper_snowdat_hr %>% 
-    mutate(standardized_snow = (((H2O_Content_1_Avg + H2O_Content_2_Avg) / 2) * (Depthscaled_Avg * 10)) * input$density)
-  )
+    mutate(standardized_snow = (((H2O_Content_1_Avg + H2O_Content_2_Avg) / 2) * (Depthscaled_Avg * 10)))
+  })
   
   #MU: standardized snow ws9 data to mm H2O
-  standardized_SnowHr_WS9 <- reactive(
+  standardized_SnowHr_WS9 <- reactive({
     ws9_upper_snowdat_hr %>% 
-    mutate(standardized_snow = (((H2O_Content_1_Avg + H2O_Content_2_Avg) / 2) * (Depthscaled_Avg * 10)) * input$density)
- )
+    mutate(standardized_snow = (((H2O_Content_1_Avg + H2O_Content_2_Avg) / 2) * (Depthscaled_Avg * 10)))
+ })
   
-    output$table <- renderDT(standardized_Well_WS9, #MU: When we do the calculations we can put them in one dataset and output that.
-                             class = "display", #MU: this is the style of the table
-                             caption = 'Table 1: This table shows x.', #MU: adds a caption to the table
-                             filter = "top") #MU: This places the filter at the top of the table
+  #MU: standardized precip data ws3 to mm H2O
+  
+  
+  output$table <- DT::renderDataTable({DT::datatable(standardized_Well_WS9(), #MU: When we do the calculations we can put them in one dataset and output that.
+                  class = "display", #MU: this is the style of the table
+                  caption = 'Table 1: This table shows x.', #MU: adds a caption to the table
+                  filter = "top")
+      })#MU: This places the filter at the top of the table
     #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
-    output$plot1 <- renderPlot(
-        ws3_upper_wells %>% filter(name == input$toview) %>%
+    output$plot1 <- renderPlot({
+        ws3_upper_wells %>% 
+        filter(name == input$toview & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>%
             ggplot(aes(x = TIMESTAMP, y = value))+
-            geom_line())
+            geom_line()
+      })
       
     output$porosPlot <- renderPlot({
       x <- seq(from = 0, to = 100, by = 0.1)
