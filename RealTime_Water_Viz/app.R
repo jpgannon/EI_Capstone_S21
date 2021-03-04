@@ -87,7 +87,10 @@ ui <- fluidPage(
     tabPanel("Timeseries analysis",
           sidebarLayout(
             sidebarPanel(
-              selectInput("var1", "What well would you like to plot over time?", choices = unique(well_data$name), selected = unique(well_data$name)[1], multiple = TRUE),
+              dateInput("startdate", label = "Start Date", val= "2020-12-14"), 
+              dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
+              selectInput("var1", "What well would you like to plot over time?", 
+                          choices = unique(well_data$name), selected = unique(well_data$name)[1], multiple = TRUE),
               
             ),
             mainPanel(plotOutput("var1"))
@@ -97,8 +100,10 @@ ui <- fluidPage(
     tabPanel("Bivariate",
         sidebarLayout(
           sidebarPanel(
-            selectInput("var_x", "What variable would you like to plot on the x axis?", choices = unique(well_data$name), selected = unique(well_data$name)[1], multiple = FALSE),
-            selectInput("var_y", "What variable would you like to plot on the y axis?", choices = unique(well_data$name), selected = unique(well_data$name)[2], multiple = FALSE),
+            selectInput("var_x", "What variable would you like to plot on the x axis?", 
+                        choices = unique(well_data$name), selected = unique(well_data$name)[1], multiple = FALSE),
+            selectInput("var_y", "What variable would you like to plot on the y axis?", 
+                        choices = unique(well_data$name), selected = unique(well_data$name)[2], multiple = FALSE),
           ),
           mainPanel(plotOutput("var_x"))
         )
@@ -110,7 +115,7 @@ ui <- fluidPage(
 server <- function(input, output, sessions) {
   
   output$var1 <- renderPlot({
-      well_data %>%  filter(name %in% input$var1) %>% 
+      well_data %>%  filter(name %in% input$var1 & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>% 
       ggplot(aes(x = TIMESTAMP, y = value, color = name)) +
       geom_line() +
       labs(title = "Timeseries Analysis of Well Data",
