@@ -70,7 +70,14 @@ ws3_upper_snowdat15mins <- read_csv("Realtime_waterstorage_app/Water_Storage_Dat
                                                             X15= "RTD(7)" , X16= "RTD(8)", X17= "RTD(9)" , 
                                                             X18= "Air_TempC_Avg", X19 = "Depthraw", 
                                                             X20= "Depthscaled"))%>%
-  select(TIMESTAMP, H2O_Content_1, H2O_Content_2, Depthscaled) 
+  select(TIMESTAMP, H2O_Content_1, H2O_Content_2, Depthscaled) %>% 
+  mutate(H2O_Content_1 = replace(H2O_Content_1, which(H2O_Content_1 < 0), NA)) %>%   #AW - change the two H20 contents to NA for the negatives 
+  mutate(H2O_Content_2 = replace(H2O_Content_2, which(H2O_Content_2 < 0), NA)) 
+
+#AW - adds a column with the average ignoring the NA 
+ws3_upper_snowdat15mins <- ws3_upper_snowdat15mins %>% 
+  mutate(VWC_average = rowMeans(ws3_upper_snowdat15mins[,c('H2O_Content_1','H2O_Content_2')],
+                                na.rm = TRUE ))
 
 
 #reading in WS3 Snow hourly data 
@@ -86,9 +93,17 @@ ws3_upper_snowdat_hr <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/W
                                                          X14= "RTD_Avg(8)" , X15= "RTD_Avg(9)" , 
                                                          X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , 
                                                          X18= "Depthscaled_Avg"))%>%
-  select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) 
+  select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) %>% 
+  mutate(H2O_Content_1_Avg = replace(H2O_Content_1_Avg, which(H2O_Content_1_Avg < 0), NA)) %>%   #AW - change the two H20 contents to NA for the negatives 
+  mutate(H2O_Content_2_Avg = replace(H2O_Content_2_Avg, which(H2O_Content_2_Avg < 0), NA)) 
+
+#AW - adds a column with the average ignoring the NA 
+ws3_upper_snowdat_hr <- ws3_upper_snowdat_hr %>% 
+  mutate(VWC_average = rowMeans(ws3_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')],
+                                na.rm = TRUE ))
 
 #reading in WS9 Snow 15 mins 
+# AW - currently the VWC is either 0 or NA for all entries 
 
 ws9_upper_snowdat15mins <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_table_WS9_WS_9_snowdat_15min.dat",
                                     skip = 4, col_names = c(X1 = "TIMESTAMP" ,
@@ -101,10 +116,18 @@ ws9_upper_snowdat15mins <- read_csv("Realtime_waterstorage_app/Water_Storage_Dat
                                                             X16= "RTD(8)", X17= "RTD(9)" , 
                                                             X18= "Air_TempC_Avg", X19 = "Depthraw", 
                                                             X20= "Depthscaled"))%>%
-  select(TIMESTAMP, H2O_Content_1, H2O_Content_2, Depthscaled) 
+  select(TIMESTAMP, H2O_Content_1, H2O_Content_2, Depthscaled) %>% 
+  mutate(H2O_Content_1 = replace(H2O_Content_1, which(H2O_Content_1 < 0), NA)) %>%   #AW - change the two H20 contents to NA for the negatives 
+  mutate(H2O_Content_2 = replace(H2O_Content_2, which(H2O_Content_2 < 0), NA)) 
+
+#AW - adds a column with the average ignoring the NA 
+ws9_upper_snowdat15mins <- ws9_upper_snowdat15mins %>% 
+  mutate(VWC_average = rowMeans(ws9_upper_snowdat15mins[,c('H2O_Content_1','H2O_Content_2')],
+                                na.rm = TRUE ))
 
 
 #reading in WS9 Snow hourly data 
+# AW - currently the VWC is either 0 or NA for all entries 
 
 ws9_upper_snowdat_hr <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_table_WS9_WS_9_snowdat_hr.dat",
                                  skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", 
@@ -116,7 +139,14 @@ ws9_upper_snowdat_hr <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/W
                                                          X13= "RTD_Avg(7)" , X14= "RTD_Avg(8)" , 
                                                          X15= "RTD_Avg(9)" , X16= "Air_TempC_Avg", 
                                                          X17= "Depthraw_Avg" , X18= "Depthscaled_Avg"))%>%
-  select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) 
+  select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) %>% 
+  mutate(H2O_Content_1_Avg = replace(H2O_Content_1_Avg, which(H2O_Content_1_Avg < 0), NA)) %>%   #AW - change the two H20 contents to NA for the negatives 
+  mutate(H2O_Content_2_Avg = replace(H2O_Content_2_Avg, which(H2O_Content_2_Avg < 0), NA)) 
+
+#AW - adds a column with the average ignoring the NA 
+ws9_upper_snowdat_hr <- ws9_upper_snowdat_hr %>% 
+  mutate(VWC_average = rowMeans(ws9_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')],
+                                na.rm = TRUE ))
 
 
 # Define UI for application
