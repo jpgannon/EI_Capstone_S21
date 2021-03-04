@@ -75,11 +75,6 @@ ui <- fluidPage(
     tabPanel("Home Page",
              sidebarLayout(
               sidebarPanel(
-              sliderInput("obs",
-                         "Number of observations:",
-                          min = 0,
-                          max = 1000,
-                          value = 500),
              ),
              mainPanel(plotOutput("plot"))),
              #Creates App home page tab
@@ -137,8 +132,9 @@ server <- function(input, output, sessions) {
     toPlot <- inner_join(varY, varX, by = "TIMESTAMP")
    
     toPlot %>% 
-      ggplot(aes(x = value.x, y = value.y)) +
+      ggplot(aes(x = value.x, y = value.y, color = TIMESTAMP)) +
       geom_point() +
+      scale_color_gradientn(colours = rainbow(5)) +
       labs(title = "Bivariate Analysis of Well Data",
            x = unique(toPlot$name.x),
            y = unique(toPlot$name.y))
