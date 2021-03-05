@@ -24,18 +24,22 @@ ws3_upper_wells <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_
                                                     X7="WS3_N1_depth_corr",X8="WS3_N1_corr_depth",
                                                     X9="WS3_N1_welltemp",X10="WS3_N2_psi",
                                                     X11="WS3_N2_rawdepth",X12="WS3_N2_depth_corr",
-                                                X13="WS3_N2_corr_depth",X14="WS3_N2_welltemp",
-                                                X15="WS3_42_4_d2_psi",X16="WS3_42_4_d2_rawdepth",
-                                                X17="WS3_42_4_d2_depth_corr",X18="WS3_42_4_d2_corr_depth",
-                                                X19="WS3_42_4_d2_welltemp"))%>%
-    select(TIMESTAMP, WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth)  
+                                                    X13="WS3_N2_corr_depth",X14="WS3_N2_welltemp",
+                                                    X15="WS3_42_4_d2_psi",X16="WS3_42_4_d2_rawdepth",
+                                                    X17="WS3_42_4_d2_depth_corr",X18="WS3_42_4_d2_corr_depth",
+                                                    X19="WS3_42_4_d2_welltemp"))%>%
+  select(TIMESTAMP, WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth)  
 
-ws3_upper_wells <-  ws3_upper_wells %>% 
-                    aggregate(list(TIME = cut(ws3_upper_wells$TIMESTAMP, breaks="hour")), 
-                            mean, na.rm = TRUE) %>%  #MU: I think I aggregated this correctly so it shows hourly data but not positive. 
-                    select(TIME, WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth)
+ws3_upper_wells <-  ws3_upper_wells %>%
+  group_by(year = year(TIMESTAMP), month = month(TIMESTAMP), day = day(TIMESTAMP), hour = hour(TIMESTAMP)) %>% 
+  summarise(WS3_N1_corr_depth = mean(WS3_N1_corr_depth),
+            WS3_N2_corr_depth = mean(WS3_N2_corr_depth), 
+            WS3_42_4_d2_corr_depth = mean(WS3_42_4_d2_corr_depth)) %>%
+  ungroup() %>%
+  mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
+  select(-c(month, day, year, hour))
 
-#reading in WS9 well data
+
 
 ws9_upper_wells <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_table_WS9_WS_9_wells.dat",
                             skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD",
@@ -50,12 +54,14 @@ ws9_upper_wells <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_
                                                     X19 = "HB176d_welltemp"))%>%
   select(TIMESTAMP, HB156_corr_depth, HB179s_corr_depth, HB176d_corr_depth) 
 
-ws9_upper_wells <-  ws9_upper_wells %>% 
-  aggregate(list(TIME = cut(ws9_upper_wells$TIMESTAMP, breaks="hour")), 
-            mean, na.rm = TRUE) %>%  #MU: I think I aggregated this correctly so it shows hourly data but not positive. 
-  select(TIME, HB156_corr_depth, HB179s_corr_depth, HB176d_corr_depth)
-
-
+ws9_upper_wells <-  ws9_upper_wells %>%
+  group_by(year = year(TIMESTAMP), month = month(TIMESTAMP), day = day(TIMESTAMP), hour = hour(TIMESTAMP)) %>% 
+  summarise(HB156_corr_depth = mean(HB156_corr_depth),
+            HB179s_corr_depth = mean(HB179s_corr_depth), 
+            HB176d_corr_depth = mean(HB176d_corr_depth)) %>%
+  ungroup() %>%
+  mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
+  select(-c(month, day, year, hour))
 
 
 #reading in WS3 Snow 15 mins 
@@ -152,127 +158,130 @@ ws9_upper_snowdat_hr <- ws9_upper_snowdat_hr %>%
 # Define UI for application
 ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
                            theme = shinytheme('cosmo'),
-  
-
-        
-#define tabs to be used in the app
-tabPanel('About',
-         fluidRow(
-           column(1, tags$h3("Watershed 3", align = "left")), #MU: Watershed 3 Label
-           column(10, tags$h3("Watershed 9", align = "right"))), #MU: Watershed 9 Label
-         fluidRow(
-           column(1, tags$img(src = "WS3map.png", align = "left", width = 340 , height = 230)), #MU: Watershed 3 Map
-           column(10, tags$img(src = "WS9map.png", align = "right", width = 340 , height = 230))), #MU: Watershed 9 Map
-         fluidRow(
-           tags$h4("This app visualizes data from Watershed 3 and 9 of the Hubbard
+                           
+                           
+                           
+                           #define tabs to be used in the app
+                           tabPanel('About',
+                                    fluidRow(
+                                      column(1, tags$h3("Watershed 3", align = "left")), #MU: Watershed 3 Label
+                                      column(10, tags$h3("Watershed 9", align = "right"))), #MU: Watershed 9 Label
+                                    fluidRow(
+                                      column(1, tags$img(src = "WS3map.png", align = "left", width = 340 , height = 230)), #MU: Watershed 3 Map
+                                      column(10, tags$img(src = "WS9map.png", align = "right", width = 340 , height = 230))), #MU: Watershed 9 Map
+                                    fluidRow(
+                                      tags$h4("This app visualizes data from Watershed 3 and 9 of the Hubbard
                                     Brook Experimental Forest through graphs, a map showing where the data was collected,
                    and a table. The data can also be filtered using the various filters found in each tab.")),
-        fluidRow(
-          tags$p("Map Credit: Hubbard Brook Experimental Forest"),
-          tags$p("This application will attempt to:
+                                    fluidRow(
+                                      tags$p("Map Credit: Hubbard Brook Experimental Forest"),
+                                      tags$p("This application will attempt to:
                     - Visualize Realtime and Past Watershed Data.
                     - Create a user-friendly dashboard that allows for data exploration.
                     - Assist Hubbard Brook Scientists in testing hypothetical data and results.")
-        )),
-tabPanel('Watershed Visualizations',
-         sidebarLayout(
-           sidebarPanel(width = 3,
-                        dateInput("startdate", label = "Start Date", val= "2020-12-14"), #MU: Should we make the default start value the first data present in the data we read in?
-                        dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
-                        selectInput(inputId = "toview", label = "Select dataset to view:", 
-                                    choices = unique(ws3_upper_wells$name), 
-                                    selected = unique(ws3_upper_wells$name)[1]),
-                        numericInput("poros","Porosity:",
-                                   0.1, step = 0.1, min = 0, max = 1),
-                        verbatimTextOutput("value"),
-                        fluid = TRUE),
-           mainPanel(
-             plotOutput("plot1")
-           )
-         ) 
-      ),
-
-  
-tabPanel('Table View' ,DTOutput("table")),
-
-         
-tabPanel('Map', leafletOutput("map",width = '100%'))
-
-
-
+                                    )),
+                           tabPanel('Watershed Visualizations',
+                                    sidebarLayout(
+                                      sidebarPanel(width = 3,
+                                                   dateInput("startdate", label = "Start Date", val= "2020-12-14"), #MU: Should we make the default start value the first data present in the data we read in?
+                                                   dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
+                                                   selectInput(inputId = "toview", label = "Select dataset to view:", 
+                                                               choices = unique(ws3_upper_wells$name), 
+                                                               selected = unique(ws3_upper_wells$name)[1]),
+                                                   numericInput("poros","Porosity:",
+                                                                0.1, step = 0.1, min = 0, max = 1),
+                                                   verbatimTextOutput("value"),
+                                                   fluid = TRUE),
+                                      mainPanel(
+                                        plotOutput("plot1")
+                                      )
+                                    ) 
+                           ),
+                           
+                           
+                           tabPanel('Table View' ,DTOutput("table")),
+                           
+                           
+                           tabPanel('Map', leafletOutput("map",width = '100%'))
+                           
+                           
+                           
 ))
 
 
 
 # Define server
 server <- function(input, output) {
-    #----------------
-    # read in cleaned watershed data
-    # ---------------
-
+  #----------------
+  # read in cleaned watershed data
+  # ---------------
+  
   #MU: standardized well ws3 data to mm H2O
- # standardized_Well_WS3 <-  ws3_upper_wells %>% 
-  #  mutate(standardized_well_1 = ((WS3_N1_corr_depth * 10) * input$poros)) %>% 
-  #  mutate(standardized_well_2 = ((WS3_N2_corr_depth * 10) * input$poros)) %>% 
-  #  mutate(standardized_deep_well = ((WS3_42_4_d2_corr_depth * 10) * input$poros)) %>%
-   # select(TIME, standardized_well_1, standardized_well_2, standardized_deep_well)
-  
-  
+  standardized_Well_WS3 <-  reactive({
+    ws3_upper_wells %>% 
+      mutate(standardized_well_1 = ((WS3_N1_corr_depth * 10) * input$poros)) %>% 
+      mutate(standardized_well_2 = ((WS3_N2_corr_depth * 10) * input$poros)) %>% 
+      mutate(standardized_deep_well = ((WS3_42_4_d2_corr_depth * 10) * input$poros)) %>%
+      select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
+  })
   #Mu: standardized well ws9 data to mm H2O
   standardized_Well_WS9 <-  reactive({
     ws9_upper_wells %>% 
-    mutate(standardized_well_1 = ((HB156_corr_depth * 10) * input$poros)) %>% 
-    mutate(standardized_well_2 = ((HB179s_corr_depth * 10) * input$poros)) %>% 
-    mutate(standardized_deep_well = ((HB176d_corr_depth * 10) * input$poros)) %>%
-    select(TIME, standardized_well_1, standardized_well_2, standardized_deep_well)
+      mutate(standardized_well_1 = ((HB156_corr_depth * 10) * input$poros)) %>% 
+      mutate(standardized_well_2 = ((HB179s_corr_depth * 10) * input$poros)) %>% 
+      mutate(standardized_deep_well = ((HB176d_corr_depth * 10) * input$poros)) %>%
+      select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
   })
   #MU: standardized snow ws3 data to mm H2O
   standardized_SnowHr_WS3 <-  reactive({
     ws3_upper_snowdat_hr %>% 
-    mutate(standardized_snow = (((H2O_Content_1_Avg + H2O_Content_2_Avg) / 2) * (Depthscaled_Avg * 10)))
+      mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10)))
   })
   
   #MU: standardized snow ws9 data to mm H2O
   standardized_SnowHr_WS9 <- reactive({
     ws9_upper_snowdat_hr %>% 
-    mutate(standardized_snow = (((H2O_Content_1_Avg + H2O_Content_2_Avg) / 2) * (Depthscaled_Avg * 10)))
- })
+      mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10)))
+  })
   
   #MU: standardized precip data ws3 to mm H2O
   
   
+  #MU: joined ws3 data
+  ws3_standard <- full_join(standardized_Well_WS3(), standardized_SnowHr_WS3, by = TIMESTAMP)
+  
   output$table <- DT::renderDataTable({DT::datatable(standardized_Well_WS9(), #MU: When we do the calculations we can put them in one dataset and output that.
-                  class = "display", #MU: this is the style of the table
-                  caption = 'Table 1: This table shows x.', #MU: adds a caption to the table
-                  filter = "top")
-      })#MU: This places the filter at the top of the table
-    #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
-    output$plot1 <- renderPlot({
-        ws3_upper_wells %>% 
-        filter(name == input$toview & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>%
-            ggplot(aes(x = TIMESTAMP, y = value))+
-            geom_line()
-      })
-      
-    output$porosPlot <- renderPlot({
-      x <- seq(from = 0, to = 100, by = 0.1)
-      y <- x*input$poros + input$change
-      plot(x,y)
-    })
-
-
-# Plot map of station locations using leaflet
-#---------------------------------------------
-
-m <-leaflet() %>% 
+                                                     class = "display", #MU: this is the style of the table
+                                                     caption = 'Table 1: This table shows x.', #MU: adds a caption to the table
+                                                     filter = "top")
+  })#MU: This places the filter at the top of the table
+  #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
+  output$plot1 <- renderPlot({
+    ws3_upper_wells %>% 
+      filter(name == input$toview & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>%
+      ggplot(aes(x = TIMESTAMP, y = value))+
+      geom_line()
+  })
+  
+  output$porosPlot <- renderPlot({
+    x <- seq(from = 0, to = 100, by = 0.1)
+    y <- x*input$poros + input$change
+    plot(x,y)
+  })
+  
+  
+  # Plot map of station locations using leaflet
+  #---------------------------------------------
+  
+  m <-leaflet() %>% 
     addProviderTiles("OpenTopoMap", options = providerTileOptions(noWrap = TRUE)) %>% 
     addMarkers(lng= -71.7185, lat = 43.9403, popup = "Hubbard Brook Experimental Forest")
-
-output$map <- renderLeaflet(
+  
+  output$map <- renderLeaflet(
     m
   )
-
-#---------------------------------------------
+  
+  #---------------------------------------------
 } # END Server function
 #---------------------------------------------
 #---------------------------------------------
