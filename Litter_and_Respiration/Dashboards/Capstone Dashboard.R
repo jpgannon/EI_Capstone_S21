@@ -4,6 +4,10 @@ library(leaflet)
 library(dplyr)
 library(rgdal)
 library(tidyr)
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+library(ggthemes)
 
 
 Litterfall <-
@@ -15,9 +19,8 @@ StandLocations <-
 lat_long <-
   read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/lat_long.csv")
 
-CleanSoilResp <- select(SoilRespiration, date, stand, flux, treatment)
-
-CleanSoilResp <- filter(CleanSoilResp, flux < 500, flux >= 0)
+CleanSoilResp <- SoilRespiration %>% select(date, stand, flux, treatment) 
+CleanLitter <- Litterfall %>% select(Year, whole.mass, Stand, Treatment)
 
 lat_long <- lat_long%>%mutate(popup_info = paste("Stand:",Site))
 
@@ -73,21 +76,58 @@ ui <- dashboardPage(
             ),
             h1("Litterfall")),
     tabItem(tabName = "Soil_Respiration",
-            box(plotOutput("correlation_plot"), width = 8),
-            box(selectInput("Flux", "Flux", 
-                            c("flux","stand"))
-            ),
-            h1("Soil Respiration"))
+            h1("Soil Respiration"),
+            box(width = 12, dateRangeInput("date", "Date Range:",
+                                           start = "2008-07-01",
+                                           end = "2020-07-25",
+                                           min = "2008-07-01",
+                                           max = "2020-07-25")),
+            box(plotOutput("flux_ts_plot"), width = 12))
   ))
 )
 
 server <- function(input, output) {
-  output$correlation_plot <- renderPlot({
-    plot(CleanSoilResp$treatment, CleanSoilResp[[input$Flux]],
-         xlab = "Treatment", ylab = "Flux")
+  output$timeseries_plot <- renderPlot({
+    min <- input$Year[1]
+    max <- input$Year[2]
+    Treatmentselection <- input$Treatment
+    Standselection <- input$Stand
+    
+    Litterfall %>%
+      filter(Year >= min & Year <= max) %>%
+      filter(Stand %in% Standselection & Treatment %in% Treatmentselection) %>%
+      
+      ggplot(aes(x = Year, group = interaction(Treatment, Year), y = whole.mass, color = Treatment)) +
+      geom_boxplot(size = 1) +
+      geom_point(size = 1) +
+      theme_bw() +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+      labs(title ="Time vs. Litterfall Mass Time Series",
+           x = "Year",
+           y = "Mass (g litter /m2)") +
+      facet_wrap(facets = "Stand", ncol = 5)
   })
   
-  output$sites <- ({})
+  output$litterfall_box <- renderPlot({
+    min <- input$Year[1]
+    max <- input$Year[2]
+    Treatmentselection <- input$Treatment
+    Standselection <- input$Stand
+    
+    Litterfall %>%
+      filter(Year >= min & Year <= max) %>%
+      filter(Stand %in% Standselection & Treatment %in% Treatmentselection) %>%
+      ggplot(aes(x=Treatment, y=whole.mass, color = Treatment)) +
+      geom_boxplot(outlier.colour = "red", outlier.shape = 4,
+                   outlier.size = 5, lwd = 1.5) +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+      theme_bw() +
+      labs(title ="Litterfall Mass vs. Treatment Type Boxplot",
+           x = "Treatment",
+           y = "Mass (g litter /m2)") +
+      facet_wrap(facets = "Stand", ncol = 5)
+    
+  })
   
 }
 

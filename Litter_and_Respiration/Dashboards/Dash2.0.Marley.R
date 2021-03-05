@@ -4,26 +4,29 @@ library(leaflet)
 library(dplyr)
 library(rgdal)
 library(tidyr)
-
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+library(ggthemes)
 
 Litterfall <-
-    read.csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/Litterfall.csv")
+<<<<<<< HEAD
+    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/Litterfall.csv")
+=======
+    read_csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/Litterfall.csv") %>%
+  mutate(Treatment = paste(Treatment))
+
+>>>>>>> 846588b93726bc745418fbcc46a26eaf7ab043d1
 SoilRespiration <-
-    read.csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/SoilResp.csv")
+    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/SoilResp.csv")
 StandLocations <-
-    read.csv("C:/Users/marle/Desktop/EI Capstone/EI_Capstone_S21/Litter_and_Respiration/StandLocations.csv")
+    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/StandLocations.csv")
+lat_long <-
+    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/lat_long.csv")
 
-CleanSoilResp <- select(SoilRespiration, date, stand, flux, treatment)
-
-CleanSoilResp <- filter(CleanSoilResp, flux < 500, flux >= 0)
-
-CleanLitter <- select()
-
-#CleanLit <- select()
-
-#FixedLocations <-
-
-
+CleanSoilResp <- SoilRespiration %>% select(date, stand, flux, treatment) %>%
+    mutate(date = mdy(date))
+  
 
 ui <- dashboardPage(
     skin = "red",
@@ -38,52 +41,99 @@ ui <- dashboardPage(
         tabItem(tabName = "Home_Page",
                 h1("Home Page, desciption of app and how to use will be placed here")),
         tabItem(tabName = "Map",
-                box(width = 8, sliderInput("Year", "Year:", 
-                                           min = min(Litterfall$Year),
-                                           max = max(Litterfall$Year),
-                                           value = c(min(Litterfall$Year), max(Litterfall$Year)),
-                                           sep = "",
-                                           step = 1)),
-                box(width = 4, selectInput("Stand", "Stand:", StandLocations$Site)),
-                fluidRow(box(width = 12, leaflet()%>% addTiles())),
                 h1("Map")),
-        #Timeseries ui
-        tabItem(tabName = "Litterfall",
-                box(plotoutput("timeseries_plot"), width = 8),
-                box(
-                    title = "Timeseries Litterfall"
-                    ,status = "primary"
-                    ,solidHeader = TRUE
-                    ,collapsible = TRUE
-                    ,plotOutput("k", height = "300px")
         
+        tabItem(tabName = "Litterfall",
+<<<<<<< HEAD
+                box(plotOutput("timeseries_plot"), width = 8),
+                box(
+                    selectInput("Treatment", "Treatment Type",
+                                c("N", "P", "NP", "C"))
                 ),
                 h1("Litterfall")),
-        tabItem(tabName = "Soil_Respiration",
-                box(plotOutput("correlation_plot"), width = 8),
-                box(
-                    selectInput("Flux", "Flux", 
-                                c("flux","stand"))
+=======
+                h1("Litterfall"),
+                box(width = 3,
+                    sliderInput("Year", label = em("Date Range:",
+                            style = "text-align:center;color black;font-size:100%"),
+                            min = min(Litterfall$Year),
+                            max = max(Litterfall$Year),
+                            value = c(min(Litterfall$Year), max(Litterfall$Year)),
+                            format = "yyyy",
+                            sep = "",
+                           step = 1)),
+                box(width = 3, 
+                    selectInput("Treatment", label = em("Select Treatment:",
+                    style = "text-align:center;color black;font-size:100%"),
+                    unique(Litterfall$Treatment), multiple = TRUE, selected = c("N", "P", "NP", "Ca", "C"))),
+                box(width = 3, 
+                    selectizeInput("Stand", label = em("Select Stand:",
+                                 style = "text-align:center;color black;font-size:100%"),
+                                choices = unique(Litterfall$Stand), multiple = TRUE, selected = "C1"),
+        
+                    ),
+                box(plotOutput("timeseries_plot"), width = 12),
+
                 ),
-                h1("Soil Respiration"))
-    ))
+>>>>>>> 846588b93726bc745418fbcc46a26eaf7ab043d1
+        
+        tabItem(tabName = "Soil_Respiration",
+                h1("Soil Respiration"),
+                box(width = 12, dateRangeInput("date", "Date Range:",
+                                               start = "2008-07-01",
+                                               end = "2020-07-25",
+                                               min = "2008-07-01",
+                                               max = "2020-07-25")
+                ),
+                box(plotOutput("flux_ts_plot"), width = 5),
+        )
+    )),
 )
 
 server <- function(input, output) {
-    output$correlation_plot <- renderPlot({
-        plot(CleanSoilResp$treatment, CleanSoilResp[[input$Flux]],
-             xlab = "Treatment", ylab = "Flux")
-    })
-    #Litterfall Timeseries server
-    output$k <- renderPlot({
-        ggplot(dataset(),
-               aes(x=Year, y=whole.mass, group=Treatment, colour=Treatment)) +
-         geom_line(aes(size=Treatment)) +
-            geompoint() +
-            labs(title ="Timeseries Litterfall", x = "Year", y = "whole.mass")
+    output$flux_ts_plot <- renderPlot({
+        startdate <- input$date[1]
+        enddate <- input$date[2]
+        
+        CleanSoilResp %>%
+            filter(date >= startdate & date <= enddate)%>%
+            ggplot(aes(x = date, y = flux))+
+            geom_line(color = "black")+
+            labs(title = "Soil Respiration Flux", 
+                 x = "Date", 
+                 y = "CO2 efflux per unit area (μg CO2/m2/s)") +
+            geom_smooth(method = "lm")
     })
     
-}
+    output$timeseries_plot <- renderPlot({
+<<<<<<< HEAD
+        ggplot(data = Litterfall,aes(x=Year, y=whole.mass)) +
+            geom_line( color = "black") +
+            
+            xlab("") +
+            theme_ipsum() +
+=======
+        min <- input$Year[1]
+        max <- input$Year[2]
+        Treatment <- input$Treatment
+        Stand <- input$Stand
+#
+        
+        Litterfall %>%
+            filter(Year >= min & Year <= max) %>%
+            filter(Treatment == input$Treatment) %>%
+            filter(Stand == input$Stand) %>%
+            ggplot(aes(x=Year, y=whole.mass, color = Treatment)) +
+            geom_point(size = 3) +
+            #geom_line(size = 1.5) +
+>>>>>>> 846588b93726bc745418fbcc46a26eaf7ab043d1
+            theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+            labs(title ="Time Series Litterfall",
+                 x = "Year",
+                 y = "Mass (g litter /m2)") +
+          facet_wrap(facets = "Stand", ncol = 4)
+          }) 
 
+}
 
 shinyApp(ui, server)
