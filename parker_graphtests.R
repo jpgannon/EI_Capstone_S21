@@ -1,17 +1,20 @@
 
-#Import Soil Data
+library(tidyverse)
+library(lubridate)
 library(readr)
+library(shiny)
+#Import Soil Data
+
 soil_resp_data <- read_csv("Litter_and_Respiration/soil.resp.va.tech.1.29.21.csv")
-View(soil_resp_data)
+
 
 # Import Litter Data 
 litter_data <- read_csv("Litter_and_Respiration/litter.va.tech.1.29.21.csv")
-View(litter_data)
+
 
 
 #Convert soil respiration data to long so we can filter by by stand or treatment
-library(tidyverse)
-library(lubridate)
+
 
 
 # convert to long and #Convert date to "month, day, year" form
@@ -21,7 +24,7 @@ soil_resp_data2 <- soil_resp_data %>% select(date, stand, flux, treatment) %>%
 
 
 #Build the Shiny App
-library(shiny)
+
 #Define UI
 ui <- fluidPage(
   
@@ -35,15 +38,15 @@ ui <- fluidPage(
       
     #Referenced below in with "input$parameter"
       selectInput("parameter", "Plot Flux",
-                  choices = (soil_resp_data2$value),
+                  choices = unique(soil_resp_data2$name),
                   selected = "Flux"),
     
     #Referenced below with input$start_date
       dateRangeInput("start_date", "Start Date:",
-                     start <- "2008-07-01",
-                     end <- "2020-07-25",
-                     min <- "2008-07-01",
-                     max <- "2020-07-25"),
+                     start = "2008-07-01",
+                     end = "2020-07-25",
+                     min = "2008-07-01",
+                     max = "2020-07-25"),
     ),
     
     #Show plot of the generated distribution
@@ -63,12 +66,12 @@ server <- function(input, output) {
   #inputs assigned above are referenced with input$"their name"
   output$fluxplot <- renderPlot({
     startdate <- input$start_date[1]
-    enddate <- input$start[2]
+    enddate <- input$start_date[2]
     
   soil_resp_data2 %>%
-    filter(Date >= startdate, Date <= enddate) %>%
+    filter(Date >= startdate & Date <= enddate) %>%
     filter(name == input$parameter) %>%
-    ggplot(aes(x = Date, y = value))+
+    ggplot(aes(x = date, y = value))+
     geom_line()+
     theme_classic()+
     ylab(input$parameter)

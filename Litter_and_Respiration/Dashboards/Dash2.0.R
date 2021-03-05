@@ -4,18 +4,20 @@ library(leaflet)
 library(dplyr)
 library(rgdal)
 library(tidyr)
+library(ggplot2)
 
 
 Litterfall <-
-    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/Litterfall.csv")
+    read.csv("~/SENIOR_YEAR/2021_SPRING/Capstone/EI_Capstone_S21/Litter_and_Respiration/Litterfall.csv")
 SoilRespiration <-
-    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/SoilResp.csv")
+    read.csv("~/SENIOR_YEAR/2021_SPRING/Capstone/EI_Capstone_S21/Litter_and_Respiration/SoilResp.csv")
 StandLocations <-
-    read.csv("Z:/Virginia Tech School Work/Current Classes/Capstone/Project directory/EI Capstone/Litter_and_Respiration/StandLocations.csv")
+    read.csv("~/SENIOR_YEAR/2021_SPRING/Capstone/EI_Capstone_S21/Litter_and_Respiration/StandLocations.csv")
 
-CleanSoilResp <- select(SoilRespiration, date, stand, flux, treatment)
+#Filter soil resp data and converted to correct date format 
+CleanSoilResp <- SoilRespiration %>% select(date, stand, flux, treatment) %>%
+    mutate(date = mdy(date))
 
-CleanSoilResp <- filter(CleanSoilResp, flux < 500, flux >= 0)
 
 #CleanLit <- select()
 
@@ -51,19 +53,31 @@ ui <- dashboardPage(
                 ),
                 h1("Litterfall")),
         tabItem(tabName = "Soil_Respiration",
-                box(plotOutput("correlation_plot"), width = 8),
-                box(
-                    selectInput("Flux", "Flux", 
-                                c("flux","stand"))
-                ),
-                h1("Soil Respiration"))
+                h1("Soil Respiration"),
+                box(width = 12, dateRangeInput("date", "Date Range:",
+                                                    start = "2008-07-01",
+                                                    end = "2020-07-25",
+                                                    min = "2008-07-01",
+                                                    max = "2020-07-25")
+                    ),
+                box(plotOutput("flux_ts_plot"), width = 12),
+                )
     ))
 )
 
 server <- function(input, output) {
-    output$correlation_plot <- renderPlot({
-        plot(CleanSoilResp$treatment, CleanSoilResp[[input$Flux]],
-             xlab = "Treatment", ylab = "Flux")
+    output$flux_ts_plot <- renderPlot({
+        startdate <- input$date[1]
+        enddate <- input$date[2]
+        
+        CleanSoilResp %>%
+            filter(date >= startdate & date <= enddate)%>%
+        ggplot(aes(x = date, y = flux))+
+            geom_line(color = "#00AFBB", size = 1)+
+            labs(title = "Soil Respiration Flux", 
+                 x = "Date", 
+                 y = "CO2 efflux per unit area (μg CO2/m2/s)")+
+            geom_smooth(method = "lm")
     })
     
 }
