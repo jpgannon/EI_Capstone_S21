@@ -61,6 +61,12 @@ well9_15_RTD1 <- well9_15_RTD %>%
 
 heat_map <- ggplot(data = well9_15_RTD1 , mapping = aes(x = TIMESTAMP , y = name , fill = value)) +
   geom_tile() +
+  scale_fill_gradient(low = "#3a1c71",
+    high = "#ffaf7b",
+    space = "Lab",
+    na.value = "grey50",
+    guide = "colourbar",
+    aesthetics = "fill") +
   labs(x = "Date" , y = "Depth of Sensor" , title = "RTD Sensor Heat Map")
 
 heat_map
