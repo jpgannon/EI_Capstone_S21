@@ -1,0 +1,66 @@
+library(shiny)
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(dplyr)
+
+
+
+well9_15_RTD <- read_csv("Water_table_WS9_WS_9_snowdat_15min.dat",
+                              skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="Batt_Volt", 
+                                                      X4= "ptemp" , X5= "H2O_Content_1", X6= "H2O_Content_2", 
+                                                      X7= "Avg_Period_1", X8= "Avg_Period_2", X9=  "RTD1" , X10= "RTD2",
+                                                      X11= "RTD3", X12=  "RTD4" , X13= "RTD5" , X14= "RTD6" , X15= "RTD7" , 
+                                                      X16= "RTD8", X17= "RTD9" , X18= "Air_TempC_Avg", X19 = "Depthraw", X20= "Depthscaled")) %>% 
+  select(TIMESTAMP, RTD1 , RTD2 , RTD3 , RTD4 , RTD5 ,
+         RTD6 , RTD7 , RTD8, RTD9) %>% 
+  pivot_longer(cols = c(RTD1 , RTD2 , RTD3 , RTD4 , RTD5 ,
+                        RTD6 , RTD7 , RTD8 , RTD9))
+
+well9_hr_RTD <- read_csv("Water_table_WS9_WS_9_snowdat_hr.dat",
+                             skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="H2O_Content_1_Avg", 
+                                                     X4= "H2O_Content_2_Avg", X5= "Avg_Period_1_Avg", X6= "Avg_Period_2_Avg", X7="RTD_Avg1", 
+                                                     X8= "RTD_Avg2", X9=  "RTD_Avg3" , X10= "RTD_Avg4", X11= "RTD_Avg5", 
+                                                     X12=  "RTD_Avg6" , X13= "RTD_Avg7" , X14= "RTD_Avg8" , X15= "RTD_Avg9" ,
+                                                     X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , X18= "Depthscaled_Avg")) %>% 
+  select(TIMESTAMP, RTD_Avg1 , RTD_Avg2 , RTD_Avg3 , RTD_Avg4 , RTD_Avg5 ,
+         RTD_Avg6 , RTD_Avg7 , RTD_Avg8 , RTD_Avg9) %>% 
+  pivot_longer(cols = c(RTD_Avg1 , RTD_Avg2 , RTD_Avg3 , RTD_Avg4 , RTD_Avg5 ,
+                        RTD_Avg6 , RTD_Avg7 , RTD_Avg8 , RTD_Avg9))
+
+
+
+
+well3_15_RTD <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_15min.dat",
+                              skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="Batt_Volt", X4= "ptemp" ,
+                                                      X5= "H2O_Content_1", X6= "H2O_Content_2", X7= "Avg_Period_1",
+                                                      X8= "Avg_Period_2", X9=  "RTD1" , X10= "RTD2", X11= "RTD3",
+                                                      X12=  "RTD4" , X13= "RTD5" , X14= "RTD6" , X15= "RTD7" , X16= "RTD8",
+                                                      X17= "RTD9" , X18= "Air_TempC_Avg", X19 = "Depthraw", X20= "Depthscaled")) %>% 
+  select(TIMESTAMP, RTD1 , RTD2 , RTD3 , RTD4 , RTD5 ,
+         RTD6 , RTD7 , RTD8, RTD9) %>% 
+  pivot_longer(cols = c(RTD1 , RTD2 , RTD3 , RTD4 , RTD5 ,
+                        RTD6 , RTD7 , RTD8 , RTD9))
+
+
+
+well3_hr_RTD <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_hr.dat",
+                             skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="H2O_Content_1_Avg",
+                                                     X4= "H2O_Content_2_Avg", X5= "Avg_Period_1_Avg", X6= "Avg_Period_2_Avg",
+                                                     X7="RTD_Avg1", X8= "RTD_Avg2", X9=  "RTD_Avg3" , X10= "RTD_Avg4",
+                                                     X11= "RTD_Avg5", X12=  "RTD_Avg6" , X13= "RTD_Avg7" , X14= "RTD_Avg8" ,
+                                                     X15= "RTD_Avg9" , X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , X18= "Depthscaled_Avg")) %>% 
+  select(TIMESTAMP, RTD_Avg1 , RTD_Avg2 , RTD_Avg3 , RTD_Avg4 , RTD_Avg5 ,
+         RTD_Avg6 , RTD_Avg7 , RTD_Avg8 , RTD_Avg9) %>% 
+  pivot_longer(cols = c(RTD_Avg1 , RTD_Avg2 , RTD_Avg3 , RTD_Avg4 , RTD_Avg5 ,
+                        RTD_Avg6 , RTD_Avg7 , RTD_Avg8 , RTD_Avg9))
+
+
+well9_15_RTD1 <- well9_15_RTD %>%
+  filter(TIMESTAMP >= as.POSIXct("2020-12-11"))
+
+heat_map <- ggplot(data = well9_15_RTD1 , mapping = aes(x = TIMESTAMP , y = value , color = name)) +
+  geom_tile() +
+  labs(x = "Date" , y = "Depth of Sensor" , title = "RTD Sensor Heat Map")
+
+heat_map
