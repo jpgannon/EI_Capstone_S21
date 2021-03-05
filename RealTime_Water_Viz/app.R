@@ -58,21 +58,26 @@ well3_snowdat_hr <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_hr.dat",
                                                      X11= "RTD_Avg(5)", X12=  "RTD_Avg(6)" , X13= "RTD_Avg(7)" , X14= "RTD_Avg(8)" ,
                                                      X15= "RTD_Avg(9)" , X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , X18= "Depthscaled_Avg"))
 
+library(shinythemes)
 
 ui <- fluidPage(
+  theme = shinytheme("cosmo"),
   tabsetPanel(
     tabPanel("Home Page",
+             titlePanel("Hubbard Brook Watershed Vizualization"),
              sidebarLayout(
+               
                sidebarPanel(
                  sliderInput("obs",
                              "Number of observations:",
                              min = 0,
                              max = 1000,
                              value = 500),
+                 img(src = "cap_home_pic.png", style="display: block; margin-left: auto;", height = 448, width = 582)
                ),
                mainPanel(plotOutput("plot"))),
-               titlePanel("Hubbard Brook Watershed Vizualization")),
-               mainPanel(img(src = "cap_home_pic.png", height = 448, width = 582)),
+               ),
+            
              #Creates App home page tab
              
     tabPanel("Timeseries analysis",

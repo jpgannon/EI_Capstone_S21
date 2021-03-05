@@ -178,3 +178,65 @@ well3_snowdat_hr_Depthscaled_AVG <- read_csv("Water_table_WS3upper_WS_3Up_snowda
 
 
 snow_hr_Depthscaled_AVG <- bind_rows(well9_snowdat_hr_content2_AVG , well3_snowdat_hr_content2_AVG , .id = "HR_Depthscaled_AVG")
+
+
+all_variables <- bind_rows(well_corr_depth , snow_15m_H20_content1 ,
+                           snow_15m_H20_content2 , snow_15m_Depthscaled,
+                           snow_hr_Content2_avg , snow_hr_Depthscaled_AVG , .id = "all_variables")
+                           
+
+
+
+#app code
+ui <- fluidPage(
+  tabsetPanel(
+    tabPanel("Home Page",
+             sidebarLayout(
+               sidebarPanel(
+                 sliderInput("obs",
+                             "Number of observations:",
+                             min = 0,
+                             max = 1000,
+                             value = 500),
+               ),
+               mainPanel(plotOutput("plot"))),
+             titlePanel("Hubbard Brook Watershed Vizualization")),
+    #Creates App home page tab
+    
+    tabPanel("Timeseries analysis",
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput("var1", "What well would you like to plot over time?", choices = unique(all_variables$name), selected = unique(all_variables$name)[1], multiple = TRUE),
+                 
+               ),
+               mainPanel(plotOutput("var1"))
+             )
+    ),
+    ###Creates tab and tab settings for Watershed 3
+    tabPanel("Bivariate",
+             titlePanel("Watershed 9 Visualization"),
+             
+    )
+  )
+)
+
+
+
+server <- function(input, output, sessions) {
+  
+  output$var1 <- renderPlot({
+    all_variables %>%  filter(name %in% input$var1) %>% 
+      ggplot(aes(x = TIMESTAMP, y = value, color = name)) +
+      geom_line() +
+      labs(title = "Timeseries of Well Data",
+           x = "Time", 
+           y = "Depth (cm)",
+           fill = "Wells") +
+      theme_bw()
+    
+  })
+  
+  
+}
+
+shinyApp(ui, server)
