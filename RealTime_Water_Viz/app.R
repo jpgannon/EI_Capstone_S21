@@ -1,8 +1,12 @@
+#Import Packages
 library(shiny)
 library(tidyverse)
 library(lubridate)
 library(ggplot2)
 library(dplyr)
+library(shinythemes)
+
+#Read in the well data
 
 well9 <- read_csv("Water_table_WS9_WS_9_wells.dat",
                   skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="Batt_Volt", 
@@ -24,22 +28,23 @@ well3 <- read_csv("Water_table_WS3upper_WS_3Up_wells.dat",
   select(TIMESTAMP, WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth) %>% 
   pivot_longer(cols = c(WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth))
 
-
-well_data <- bind_rows(well3, well9, .id = "well")
-
 well9_snowdat_15m <- read_csv("Water_table_WS9_WS_9_snowdat_15min.dat",
                               skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="Batt_Volt", 
                                                       X4= "ptemp" , X5= "H2O_Content_1", X6= "H2O_Content_2", 
                                                       X7= "Avg_Period_1", X8= "Avg_Period_2", X9=  "RTD(1)" , X10= "RTD(2)",
                                                       X11= "RTD(3)", X12=  "RTD(4)" , X13= "RTD(5)" , X14= "RTD(6)" , X15= "RTD(7)" , 
-                                                      X16= "RTD(8)", X17= "RTD(9)" , X18= "Air_TempC_Avg", X19 = "Depthraw", X20= "Depthscaled")) 
+                                                      X16= "RTD(8)", X17= "RTD(9)" , X18= "Air_TempC_Avg", X19 = "Depthraw", X20= "Depthscaled")) %>% 
+  select(TIMESTAMP, H2O_Content_1, H2O_Content_2, Depthscaled) %>% 
+  pivot_longer(cols = c(H2O_Content_1, H2O_Content_2, Depthscaled))
 
 well9_snowdat_hr <- read_csv("Water_table_WS9_WS_9_snowdat_hr.dat",
                              skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="H2O_Content_1_Avg", 
                                                      X4= "H2O_Content_2_Avg", X5= "Avg_Period_1_Avg", X6= "Avg_Period_2_Avg", X7="RTD_Avg(1)", 
                                                      X8= "RTD_Avg(2)", X9=  "RTD_Avg(3)" , X10= "RTD_Avg(4)", X11= "RTD_Avg(5)", 
                                                      X12=  "RTD_Avg(6)" , X13= "RTD_Avg(7)" , X14= "RTD_Avg(8)" , X15= "RTD_Avg(9)" ,
-                                                     X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , X18= "Depthscaled_Avg"))
+                                                     X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , X18= "Depthscaled_Avg")) %>% 
+  select(TIMESTAMP, H2O_Content_2_Avg, Depthscaled_Avg) %>% 
+  pivot_longer(cols = c(H2O_Content_2_Avg, Depthscaled_Avg))
 
 
 
@@ -49,63 +54,81 @@ well3_snowdat_15m <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_15min.dat",
                                                       X5= "H2O_Content_1", X6= "H2O_Content_2", X7= "Avg_Period_1",
                                                       X8= "Avg_Period_2", X9=  "RTD(1)" , X10= "RTD(2)", X11= "RTD(3)",
                                                       X12=  "RTD(4)" , X13= "RTD(5)" , X14= "RTD(6)" , X15= "RTD(7)" , X16= "RTD(8)",
-                                                      X17= "RTD(9)" , X18= "Air_TempC_Avg", X19 = "Depthraw", X20= "Depthscaled"))
+                                                      X17= "RTD(9)" , X18= "Air_TempC_Avg", X19 = "Depthraw", X20= "Depthscaled")) %>% 
+  select(TIMESTAMP, H2O_Content_1, H2O_Content_2, Depthscaled) %>% 
+  pivot_longer(cols = c(H2O_Content_1, H2O_Content_2, Depthscaled))
+
+
 
 well3_snowdat_hr <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_hr.dat",
                              skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="H2O_Content_1_Avg",
                                                      X4= "H2O_Content_2_Avg", X5= "Avg_Period_1_Avg", X6= "Avg_Period_2_Avg",
                                                      X7="RTD_Avg(1)", X8= "RTD_Avg(2)", X9=  "RTD_Avg(3)" , X10= "RTD_Avg(4)",
                                                      X11= "RTD_Avg(5)", X12=  "RTD_Avg(6)" , X13= "RTD_Avg(7)" , X14= "RTD_Avg(8)" ,
-                                                     X15= "RTD_Avg(9)" , X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , X18= "Depthscaled_Avg"))
+                                                     X15= "RTD_Avg(9)" , X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , X18= "Depthscaled_Avg")) %>% 
+  select(TIMESTAMP, H2O_Content_2_Avg, Depthscaled_Avg) %>% 
+  pivot_longer(cols = c(H2O_Content_2_Avg, Depthscaled_Avg))
 
-library(shinythemes)
+
+well_data <- bind_rows(well3, well9, .id = "well")
+snowdat_15m <- bind_rows(well3_snowdat_15m, well9_snowdat_15m, .id = "well")
+snowdat_hr <- bind_rows(well3_snowdat_hr, well9_snowdat_hr, .id = "well")
 
 ui <- fluidPage(
+  #Added theme
   theme = shinytheme("cosmo"),
   tabsetPanel(
     tabPanel("Home Page",
-             titlePanel("Hubbard Brook Watershed Vizualization"),
              sidebarLayout(
                
-               sidebarPanel(
-                 sliderInput("obs",
-                             "Number of observations:",
-                             min = 0,
-                             max = 1000,
-                             value = 500),
-                 img(src = "cap_home_pic.png", style="display: block; margin-left: auto;", height = 448, width = 582)
+               #Added Image to home page
+               
+             sidebarPanel(img(src = "cap_home_pic.png", style="display: block; margin-left: auto;", height = 448, width = 582)
                ),
-               mainPanel(plotOutput("plot"))),
-               ),
-            
+               mainPanel()),
              #Creates App home page tab
-             
+             titlePanel("Hubbard Brook Watershed Vizualization")),
     tabPanel("Timeseries analysis",
              sidebarLayout(
                sidebarPanel(
-                 selectInput("var1", "What well would you like to plot over time?", choices = unique(well_data$name), selected = unique(well_data$name)[1], multiple = TRUE),
+                 dateInput("startdate", label = "Start Date", val= "2020-12-14"), 
+                 dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
+                 selectInput("var1", "What well would you like to plot over time?", 
+                             choices = unique(well_data$name), selected = unique(well_data$name)[1], multiple = TRUE),
                  
+                 selectInput("var2", "What snow data (15m) would you like to plot over time?", 
+                             choices = unique(snowdat_15m$name), selected = unique(snowdat_15m$name)[1], multiple = TRUE),
+                 selectInput("var3", "What snow data (hr) would you like to plot over time?", 
+                             choices = unique(snowdat_hr$name), selected = unique(snowdat_hr$name)[1], multiple = TRUE),
                ),
-               mainPanel(plotOutput("var1"))
+               mainPanel(plotOutput("var1"), 
+                         plotOutput("var2"),
+                         plotOutput("var3"))
              )
     ),
     ###Creates tab and tab settings for Watershed 3
     tabPanel("Bivariate",
-             titlePanel("Watershed 9 Visualization"),
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput("var_x", "What variable would you like to plot on the x axis?", 
+                             choices = unique(well_data$name), selected = unique(well_data$name)[1], multiple = FALSE),
+                 selectInput("var_y", "What variable would you like to plot on the y axis?", 
+                             choices = unique(well_data$name), selected = unique(well_data$name)[2], multiple = FALSE),
+               ),
+               mainPanel(plotOutput("var_x"))
+             )
              
     )
   )
 )
-  
-
 
 server <- function(input, output, sessions) {
   
   output$var1 <- renderPlot({
-    well_data %>%  filter(name %in% input$var1) %>% 
+    well_data %>%  filter(name %in% input$var1 & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>% 
       ggplot(aes(x = TIMESTAMP, y = value, color = name)) +
       geom_line() +
-      labs(title = "Timeseries of Well Data",
+      labs(title = "Timeseries Analysis of Well Data",
            x = "Time", 
            y = "Depth (cm)",
            fill = "Wells") +
@@ -113,6 +136,48 @@ server <- function(input, output, sessions) {
     
   })
   
+  output$var2 <- renderPlot({
+    snowdat_15m %>%  filter(name %in% input$var2 & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>% 
+      ggplot(aes(x = TIMESTAMP, y = value, color = name)) +
+      geom_line() +
+      labs(title = "Timeseries Analysis of Snow Data (15m)",
+           x = "Time", 
+           y = "Depth (cm)") +
+      theme_bw()
+    
+  })
+  
+  output$var3 <- renderPlot({
+    snowdat_hr %>%  filter(name %in% input$var3 & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>% 
+      ggplot(aes(x = TIMESTAMP, y = value, color = name)) +
+      geom_line() +
+      labs(title = "Timeseries Analysis of Snow Data (hr)",
+           x = "Time", 
+           y = "Depth (cm)") +
+      theme_bw()
+    
+  })
+  
+  
+  
+  output$var_x <- renderPlot({
+    
+    varY <- well_data %>% 
+      filter(name == input$var_y)
+    
+    varX <- well_data %>% 
+      filter(name == input$var_x)
+    
+    toPlot <- inner_join(varY, varX, by = "TIMESTAMP")
+    
+    toPlot %>% 
+      ggplot(aes(x = value.x, y = value.y, color = TIMESTAMP)) +
+      geom_point() +
+      scale_color_gradientn(colours = rainbow(5)) +
+      labs(title = "Bivariate Analysis of Well Data",
+           x = unique(toPlot$name.x),
+           y = unique(toPlot$name.y))
+  })
   
 }
 
