@@ -57,9 +57,9 @@ well3_hr_RTD <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_hr.dat",
 
 
 well9_15_RTD1 <- well9_15_RTD %>%
-  filter(TIMESTAMP >= as.POSIXct("2020-12-11"))
+  filter(TIMESTAMP >= as.POSIXct("2020-12-11") & TIMESTAMP <= as.POSIXct("2021-01-01")) 
 
-heat_map <- ggplot(data = well9_15_RTD1 , mapping = aes(x = TIMESTAMP , y = value , color = name)) +
+heat_map <- ggplot(data = well9_15_RTD1 , mapping = aes(x = TIMESTAMP , y = name , fill = value)) +
   geom_tile() +
   labs(x = "Date" , y = "Depth of Sensor" , title = "RTD Sensor Heat Map")
 
