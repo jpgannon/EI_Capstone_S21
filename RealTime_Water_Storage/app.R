@@ -185,9 +185,9 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
                                       sidebarPanel(width = 3,
                                                    dateInput("startdate", label = "Start Date", val= "2020-12-14"), #MU: Should we make the default start value the first data present in the data we read in?
                                                    dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
-                                                   selectInput(inputId = "toview", label = "Select dataset to view:", 
-                                                               choices = unique(ws3_upper_wells$name), 
-                                                               selected = unique(ws3_upper_wells$name)[1]),
+                                                   # selectInput(inputId = "toview", label = "Select dataset to view:", 
+                                                   #             choices = unique(ws3_standard$name), 
+                                                   #             selected = unique(ws3_standard$name)[1]),
                                                    numericInput("poros","Porosity:",
                                                                 0.1, step = 0.1, min = 0, max = 1),
                                                    verbatimTextOutput("value"),
@@ -195,7 +195,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
                                       mainPanel(
                                         plotOutput("plot1")
                                       )
-                                    ) 
+                                  ) 
                            ),
                            
                            
@@ -248,26 +248,27 @@ server <- function(input, output) {
   
   
   #MU: joined ws3 data
-  ws3_standard <- full_join(standardized_Well_WS3(), standardized_SnowHr_WS3, by = TIMESTAMP)
-  
-  output$table <- DT::renderDataTable({DT::datatable(standardized_Well_WS9(), #MU: When we do the calculations we can put them in one dataset and output that.
+  ws3_standard <- reactive ({
+    full_join(standardized_Well_WS3(), standardized_SnowHr_WS3(), by = "TIMESTAMP")
+  })
+  output$table <- DT::renderDataTable({DT::datatable(standardized_SnowHr_WS3(), #MU: When we do the calculations we can put them in one dataset and output that.
                                                      class = "display", #MU: this is the style of the table
                                                      caption = 'Table 1: This table shows x.', #MU: adds a caption to the table
                                                      filter = "top")
   })#MU: This places the filter at the top of the table
   #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
   output$plot1 <- renderPlot({
-    ws3_upper_wells %>% 
+    ws3_standard() %>% 
       filter(name == input$toview & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>%
-      ggplot(aes(x = TIMESTAMP, y = value))+
+      ggplot(aes(x = TIMESTAMP, y = standardized_well_1 ))+
       geom_line()
   })
   
-  output$porosPlot <- renderPlot({
-    x <- seq(from = 0, to = 100, by = 0.1)
-    y <- x*input$poros + input$change
+   output$porosPlot <- renderPlot({
+     x <- seq(from = 0, to = 100, by = 0.1)
+     y <- x*input$poros + input$change
     plot(x,y)
-  })
+   })
   
   
   # Plot map of station locations using leaflet
