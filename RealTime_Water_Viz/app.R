@@ -63,26 +63,27 @@ ui <- fluidPage(
   tabsetPanel(
     tabPanel("Home Page",
              sidebarLayout(
-              sidebarPanel(
-             sliderInput("obs",
-                         "Number of observations:",
-                          min = 0,
-                          max = 1000,
-                          value = 500),
-             ),
-             mainPanel(plotOutput("plot"))),
+               sidebarPanel(
+                 sliderInput("obs",
+                             "Number of observations:",
+                             min = 0,
+                             max = 1000,
+                             value = 500),
+               ),
+               mainPanel(plotOutput("plot"))),
+               titlePanel("Hubbard Brook Watershed Vizualization")),
+               mainPanel(img(src = "cap_home_pic.png", height = 448, width = 582)),
              #Creates App home page tab
-             titlePanel("Hubbard Brook Watershed Vizualization")),
+             
     tabPanel("Timeseries analysis",
-          sidebarLayout(
-            sidebarPanel(
-              checkboxInput("var1", "Watershed 3", FALSE),
-              checkboxInput("var2", "Watershed 9", FALSE),
-            ),
-            mainPanel(plotOutput("var1"),
-                      plotOutput("var2"))
-          )
- ),
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput("var1", "What well would you like to plot over time?", choices = unique(well_data$name), selected = unique(well_data$name)[1], multiple = TRUE),
+                 
+               ),
+               mainPanel(plotOutput("var1"))
+             )
+    ),
     ###Creates tab and tab settings for Watershed 3
     tabPanel("Bivariate",
              titlePanel("Watershed 9 Visualization"),
@@ -90,22 +91,24 @@ ui <- fluidPage(
     )
   )
 )
+  
+
 
 server <- function(input, output, sessions) {
   
   output$var1 <- renderPlot({
-    well_data %>% filter(well == 1) %>% 
-      ggplot(aes(x = TIMESTAMP, y = value, color = "blue")) +
-      geom_line()
+    well_data %>%  filter(name %in% input$var1) %>% 
+      ggplot(aes(x = TIMESTAMP, y = value, color = name)) +
+      geom_line() +
+      labs(title = "Timeseries of Well Data",
+           x = "Time", 
+           y = "Depth (cm)",
+           fill = "Wells") +
+      theme_bw()
     
   })
   
-  output$var2 <- renderPlot({
-    well_data %>% filter(well == 2) %>% 
-      ggplot(aes(x = TIMESTAMP, y = value, color = "red")) +
-      geom_line()
-    
-  })
+  
 }
 
 shinyApp(ui, server)

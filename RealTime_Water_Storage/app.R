@@ -3,10 +3,9 @@
 # Hubbard Brook Watershed sites 3 and 9 - snow, well, and other specific watershed data 
 #
 #
-# Author: Sam Lausten, Michelle Uchitel, Alison Walters
+# Authors: Sam Lausten, Michelle Uchitel, Alison Walters
 #
 #-------------------------------
-
 
 #load libraries
 library(shiny)
@@ -15,7 +14,8 @@ library(leaflet)
 library(lubridate)
 library(DT) #MU: Helpful for displaying data tables.
 library(tidyverse) #MU: I added tidyverse because it has ggplot2 and other good functions 
-
+library(grid)
+library(shinythemes)
 #reading in WS3 well data
 #setwd("/Volumes/GoogleDrive/My Drive/CLASSES/EI Capstone/EI_Capstone_S21")
 ws3_upper_wells <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/Water_table_WS3upper_WS_3Up_wells.dat",
@@ -112,35 +112,71 @@ ws9_upper_snowdat_hr <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/W
   select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) 
 
 # Define UI for application
-ui <- fluidPage(
-
-    # Application title
-    titlePanel("Realtime Watershed Data - Hubbard Brook"),
+ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
+                           theme = shinytheme('cosmo'),
+  
 
         
-    
-    # Sidebar with daterange 
-    sidebarLayout(
-        sidebarPanel(
-            dateInput("startdate", label = "Start Date", val=""), #MU: Should we make the default start value the first data present in the data we read in?
-            dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
-            selectInput(inputId = "toview", label = "Select dataset to view:", 
-                        choices = unique(ws3_upper_wells$name), 
-                        selected = unique(ws3_upper_wells$name)[1]),
-            width = 3
-        ),
+#define tabs to be used in the app
+tabPanel('About',
+         fluidRow(
+           column(1, tags$h3("Watershed 3", align = "left")), #MU: Watershed 3 Label
+           column(10, tags$h3("Watershed 9", align = "right"))), #MU: Watershed 9 Label
+         fluidRow(
+           column(1, tags$img(src = "WS3map.png", align = "left", width = 340 , height = 230)), #MU: Watershed 3 Map
+           column(10, tags$img(src = "WS9map.png", align = "right", width = 340 , height = 230))), #MU: Watershed 9 Map
+         fluidRow(
+           tags$h4("This app visualizes data from Watershed 3 and 9 of the Hubbard
+                                    Brook Experimental Forest through graphs, a map showing where the data was collected,
+                   and a table. The data can also be filtered using the various filters found in each tab.")),
+        fluidRow(
+          tags$p("Map Credit: Hubbard Brook Experimental Forest"),
+          tags$p("This application will attempt to:
+                    - Visualize Realtime and Past Watershed Data.
+                    - Create a user-friendly dashboard that allows for data exploration.
+                    - Assist Hubbard Brook Scientists in testing hypothetical data and results.")
+        )),
+tabPanel('Watershed Visualizations',
+        sidebarLayout(
+          sidebarPanel(width = 3,
+              dateInput("startdate", label = "Start Date", val=""), #MU: Should we make the default start value the first data present in the data we read in?
+              dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
+              selectInput(inputId = "toview", label = "Select dataset to view:", 
+                          choices = unique(ws3_upper_wells$name), 
+                          selected = unique(ws3_upper_wells$name)[1]),
+              fluid = TRUE),
+          mainPanel(
+            plotOutput("plot1")
+            )
+        ) 
+  ),
+  
+tabPanel('Table View' ,DTOutput("table")),
 
-        #main panel/tabs
-        mainPanel(
-           tabsetPanel(
-               tabPanel('About'),
-               tabPanel('Watershed Visualizations', plotOutput("plot1")),
-               tabPanel('Table' ,DTOutput("table")),
-               tabPanel('Map of Stations', leafletOutput("map",width = '100%'))
-           )
-        ) #mainPanel
-    )#sidebarLayout
-)#fluidPage
+#just experimental, not close to being real calculations - SL
+tabPanel('Porosity Slider', 
+         sidebarLayout(
+            sidebarPanel(width = 4,
+                sliderInput(inputId = "poros",label = "Porosity:",
+                            min = 0,max = 100,value = 0),
+                sliderInput(inputId = "change",label = "% change",
+                            min = -100,max = 100,value = 0)
+                ),
+            
+            mainPanel(
+              plotOutput('porosPlot')
+            )
+          )
+       ),
+
+          
+        
+         
+tabPanel('Map', leafletOutput("map",width = '100%'))
+
+
+
+))
 
 # Define server
 server <- function(input, output) {
@@ -152,31 +188,37 @@ server <- function(input, output) {
                              caption = 'Table 1: This table shows x.', #MU: adds a caption to the table
                              filter = "top") #MU: This places the filter at the top of the table
     #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
-    output$plot1 <- renderPlot({
+    output$plot1 <- renderPlot(
         ws3_upper_wells %>% filter(name == input$toview) %>%
             ggplot(aes(x = TIMESTAMP, y = value))+
-            geom_line()
+            geom_line())
+      
+    output$porosPlot <- renderPlot({
+      x <- seq(from = 0, to = 100, by = 0.1)
+      y <- x*input$poros + input$change
+      plot(x,y)
     })
-}
 
+    #MU: This is the calculations for porosity based on the input for the upper well data.
+    
+    standardizedData <- reactive({
+      ws3_upper_wells %>% 
+      mutate(standardizedVals = value * input$poros)
+})
 
-#---------------------------------------------
 # Plot map of station locations using leaflet
 #---------------------------------------------
 
-#m<-leaflet() %>%
- #addProviderTiles(providers$OpenTopoMap) %>% 
- #addTiles() %>%  # Add default OpenStreetMap map tiles
- #setView(lng= -71.7185, lat =-43.9403, zoom =9)
- #addMarkers(lng = ~longitude, lat = ~latitude, popup = "Hubbard Brook Experimental Forest")
+m <-leaflet() %>% 
+    addProviderTiles("OpenTopoMap", options = providerTileOptions(noWrap = TRUE)) %>% 
+    addMarkers(lng= -71.7185, lat = 43.9403, popup = "Hubbard Brook Experimental Forest")
 
-#output$map <- renderLeaflet(
- #m
-#)
-
+output$map <- renderLeaflet(
+    m
+  )
 
 #---------------------------------------------
- # END Server function
+} # END Server function
 #---------------------------------------------
 #---------------------------------------------
 
