@@ -249,7 +249,8 @@ server <- function(input, output) {
   
   #MU: joined ws3 data
   ws3_standard <- reactive ({
-    full_join(standardized_Well_WS3(), standardized_SnowHr_WS3(), by = "TIMESTAMP")
+    full_join(standardized_Well_WS3(), standardized_SnowHr_WS3(), by = "TIMESTAMP") %>% 
+      pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm")
   })
   output$table <- DT::renderDataTable({DT::datatable(standardized_SnowHr_WS3(), #MU: When we do the calculations we can put them in one dataset and output that.
                                                      class = "display", #MU: this is the style of the table
@@ -259,9 +260,9 @@ server <- function(input, output) {
   #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
   output$plot1 <- renderPlot({
     ws3_standard() %>% 
-      #filter(name == input$toview & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>%
-      ggplot(aes(x = TIMESTAMP, y = standardized_well_1 ))+
-      geom_line()
+      #filter(name == input$toview & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>% #this filter is causing issues rn - SL
+      ggplot(aes(x = TIMESTAMP, y = mm, fill=Water ))+
+      geom_area()
   })
   
    output$porosPlot <- renderPlot({
