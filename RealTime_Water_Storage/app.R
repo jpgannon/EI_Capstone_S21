@@ -259,7 +259,7 @@ server <- function(input, output) {
   #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
   output$plot1 <- renderPlot({
     ws3_standard() %>% 
-      filter(name == input$toview & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>%
+      #filter(name == input$toview & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>%
       ggplot(aes(x = TIMESTAMP, y = standardized_well_1 ))+
       geom_line()
   })
