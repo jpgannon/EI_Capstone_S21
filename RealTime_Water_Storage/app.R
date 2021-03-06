@@ -242,6 +242,7 @@ server <- function(input, output) {
   standardized_SnowHr_WS9 <- reactive({
     ws9_upper_snowdat_hr %>% 
       mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10)))
+    
   })
   
   #MU: standardized precip data ws3 to mm H2O
@@ -250,7 +251,8 @@ server <- function(input, output) {
   #MU: joined ws3 data
   ws3_standard <- reactive ({
     full_join(standardized_Well_WS3(), standardized_SnowHr_WS3(), by = "TIMESTAMP") %>% 
-      pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm")
+      pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
+      filter(date() > 2020-12-16)
   })
   output$table <- DT::renderDataTable({DT::datatable(standardized_SnowHr_WS3(), #MU: When we do the calculations we can put them in one dataset and output that.
                                                      class = "display", #MU: this is the style of the table
@@ -260,9 +262,10 @@ server <- function(input, output) {
   #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
   output$plot1 <- renderPlot({
     ws3_standard() %>% 
-      #filter(name == input$toview & TIMESTAMP > input$startdate & TIMESTAMP < input$enddate) %>% #this filter is causing issues rn - SL
+      filter(mm > 0) %>% 
       ggplot(aes(x = TIMESTAMP, y = mm, fill=Water ))+
-      geom_area()
+      geom_area()#+
+      #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
   })
   
    output$porosPlot <- renderPlot({
