@@ -183,6 +183,54 @@ ws9_upper_snowdat_hr <- ws9_upper_snowdat_hr %>%
   mutate(VWC_average = rowMeans(ws9_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')]))
   #                              na.rm = TRUE ))
 
+#AW - Read in precip & discharge data 
+
+WS3_weir <- read_csv("RealTime_Water_Storage/weir3_Ws_3b.dat", 
+                     skip = 4,
+                     col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "Batt",
+                                   X4 = "Ptemp", X5 = "OptMed", X6 = "OptMax",
+                                   X7 = "OptMin", X8 = "Flow_Eq", X9 = "Q",
+                                   X10 = "Discharge", X11 = "StreamTemp")) %>% 
+  select(TIMESTAMP, Discharge)
+
+WS9_weir <- read_csv("RealTime_Water_Storage/weir9_Ws_9b.dat", 
+                     skip = 4,
+                     col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "Batt",
+                                   X4 = "Ptemp", X5 = "OptMed", X6 = "OptMax",
+                                   X7 = "OptMin", X8 = "Flow_Eq", X9 = "Q",
+                                   X10 = "Discharge", X11 = "StreamTemp")) %>% 
+  select(TIMESTAMP, Discharge)
+
+WS9_Precip <- read_csv("RealTime_Water_Storage/rrg19_Rg_19-2019-08-09.dat", 
+                       skip = 4, 
+                       col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "GageMinV",
+                                     X4 = "ActTemp", X5 = "ActDepth", X6 = "ReportPCP",
+                                     X7 = "ODPCounts", X8 = "blockedSec", X9 = "Scan10",
+                                     X10 = "ActDepthRA")) %>% 
+  select(TIMESTAMP, ReportPCP)
+
+WS3_Precip <- read_csv("RealTime_Water_Storage/wxsta1_Wx_1_rain.dat", 
+                       skip = 4, 
+                       col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "GageMinV",
+                                     X4 = "ActTemp", X5 = "ActDepth", X6 = "ReportPCP",
+                                     X7 = "ODPCounts", X8 = "blockedSec", X9 = "Scan10",
+                                     X10 = "ActDepthRA")) %>% 
+  select(TIMESTAMP, ReportPCP)
+
+#AW - full join and pivot longer for the WS 3 & 9 precipitation data 
+WS_precip <- full_join(WS3_Precip, WS9_Precip, by = "TIMESTAMP") %>% 
+  `colnames<-`(c("TIMESTAMP", "WS3_Precip", "W9_Precip")) %>% 
+  pivot_longer(!TIMESTAMP, names_to = "Watershed", values_to = "Precip")
+
+#AW - full join and pivot longer for the WS 3 & 9 discharge data 
+WS_discharge <- full_join(WS3_weir, WS9_weir, by = "TIMESTAMP") %>% 
+  `colnames<-`(c("TIMESTAMP", "WS3_Discharge", "W9_Discharge")) %>% 
+  pivot_longer(!TIMESTAMP, names_to = "Watershed", values_to = "Discharge")
+
+#AW - not sure if this is beneficial; full join for both watersheds of the precip
+# and the discharge data so it is all in one table 
+#The times do not line up at all so mostly it just simplifies it by being all in one table 
+WS_precip_dis <- full_join(WS_precip, WS_discharge, by = c("TIMESTAMP", "Watershed"))
 
 # Define UI for application
 ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
