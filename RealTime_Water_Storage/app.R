@@ -154,6 +154,39 @@ ws9_upper_snowdat_hr <- ws9_upper_snowdat_hr %>%
   mutate(VWC_average = rowMeans(ws9_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')],
                                 na.rm = TRUE ))
 
+#AW - Read in precip & discharge data 
+
+WS3_weir <- read_csv("RealTime_Water_Storage/weir3_Ws_3b.dat", 
+                     skip = 4,
+                     col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "Batt",
+                                   X4 = "Ptemp", X5 = "OptMed", X6 = "OptMax",
+                                   X7 = "OptMin", X8 = "Flow_Eq", X9 = "Q",
+                                   X10 = "Discharge", X11 = "StreamTemp")) %>% 
+  select(TIMESTAMP, Discharge)
+
+WS9_weir <- read_csv("RealTime_Water_Storage/weir9_Ws_9b.dat", 
+                     skip = 4,
+                     col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "Batt",
+                                   X4 = "Ptemp", X5 = "OptMed", X6 = "OptMax",
+                                   X7 = "OptMin", X8 = "Flow_Eq", X9 = "Q",
+                                   X10 = "Discharge", X11 = "StreamTemp")) %>% 
+  select(TIMESTAMP, Discharge)
+
+WS9_Precip <- read_csv("RealTime_Water_Storage/rrg19_Rg_19-2019-08-09.dat", 
+                       skip = 4, 
+                       col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "GageMinV",
+                                     X4 = "ActTemp", X5 = "ActDepth", X6 = "ReportPCP",
+                                     X7 = "ODPCounts", X8 = "blockedSec", X9 = "Scan10",
+                                     X10 = "ActDepthRA")) %>% 
+  select(TIMESTAMP, ReportPCP)
+
+WS3_Precip <- read_csv("RealTime_Water_Storage/wxsta1_Wx_1_rain.dat", 
+                       skip = 4, 
+                       col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "GageMinV",
+                                     X4 = "ActTemp", X5 = "ActDepth", X6 = "ReportPCP",
+                                     X7 = "ODPCounts", X8 = "blockedSec", X9 = "Scan10",
+                                     X10 = "ActDepthRA")) %>% 
+  select(TIMESTAMP, ReportPCP)
 
 # Define UI for application
 ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
