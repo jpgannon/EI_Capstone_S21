@@ -188,6 +188,16 @@ WS3_Precip <- read_csv("RealTime_Water_Storage/wxsta1_Wx_1_rain.dat",
                                      X10 = "ActDepthRA")) %>% 
   select(TIMESTAMP, ReportPCP)
 
+#AW - full join and pivot longer for the WS 3 & 9 precipitation data 
+WS_precip <- full_join(WS3_Precip, WS9_Precip, by = "TIMESTAMP") %>% 
+  `colnames<-`(c("TIMESTAMP", "WS3_Precip", "W9_Precip")) %>% 
+  pivot_longer(!TIMESTAMP, names_to = "Watershed", values_to = "Precip")
+
+#AW - full join and pivot longer for the WS 3 & 9 discharge data 
+WS_discharge <- full_join(WS3_weir, WS9_weir, by = "TIMESTAMP") %>% 
+  `colnames<-`(c("TIMESTAMP", "WS3_Discharge", "W9_Discharge")) %>% 
+  pivot_longer(!TIMESTAMP, names_to = "Watershed", values_to = "Discharge")
+
 # Define UI for application
 ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
                            theme = shinytheme('cosmo'),
