@@ -103,10 +103,43 @@ ws3_upper_snowdat_hr <- read_csv("Realtime_waterstorage_app/Water_Storage_Data/W
   mutate(H2O_Content_1_Avg = replace(H2O_Content_1_Avg, which(H2O_Content_1_Avg < 0), NA)) %>%   #AW - change the two H20 contents to NA for the negatives 
   mutate(H2O_Content_2_Avg = replace(H2O_Content_2_Avg, which(H2O_Content_2_Avg < 0), NA)) 
 
+#cleaning snow data further
+cleanDepth <- function(depth, cutoff1=-15, cutoff2=150, cutoff3=5){
+  
+  #replace extreme values:
+  depth[which(depth < cutoff1 | depth > cutoff2)] <- NA
+  
+  #remove unreasonable changes in depth:
+  depthDiffs <- c(NA, diff(depth))
+  depth[which(abs(depthDiffs) > cutoff3)] <- NA
+  
+  #Replace anything below zero with zero:
+  depth[which(depth <0)] <- 0
+  
+  return(depth)
+}
+
+
+#clean:
+ws3_upper_snowdat_hr$Depthcleaned <- cleanDepth(depth = ws3_upper_snowdat_hr$Depthscaled_Avg, cutoff1=-15, cutoff2=150, cutoff3=5)
+
+
+#note that it probably makes sense to start the ws3 snow depth time series after the big gap when things 
+#start looking like they are working correctly...
+
+
+#####################################################################
+# handy trick for cleaning multiple columns of data in a df:
+
+#conditionally replace extremely low and extremely high air/snow temps with NAfor all colnames containing "RTD":
+ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))] <- lapply(ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))], function(x) replace(x, x > 50, NA))
+ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))] <- lapply(ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))], function(x) replace(x, x < -50, NA))
+
+
 #AW - adds a column with the average ignoring the NA 
 ws3_upper_snowdat_hr <- ws3_upper_snowdat_hr %>% 
-  mutate(VWC_average = rowMeans(ws3_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')],
-                                na.rm = TRUE ))
+  mutate(VWC_average = rowMeans(ws3_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')]))
+                               # na.rm = TRUE ))
 
 #reading in WS9 Snow 15 mins 
 # AW - currently the VWC is either 0 or NA for all entries 
