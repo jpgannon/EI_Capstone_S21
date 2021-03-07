@@ -290,7 +290,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
                     - Create a user-friendly dashboard that allows for data exploration.
                     - Assist Hubbard Brook Scientists in testing hypothetical data and results.")
                                     )),
-                           tabPanel('Watershed Visualizations',
+                           tabPanel('Watershed 3',
                                     sidebarLayout(
                                       sidebarPanel(width = 3,
                                                    dateInput("startdate", label = "Start Date", val= "2020-12-14"), #MU: Should we make the default start value the first data present in the data we read in?
@@ -308,7 +308,23 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
                                   ) 
                            ),
                            
-                           
+                           # tabPanel('Watershed 9',
+                           #          sidebarLayout(
+                           #            sidebarPanel(width = 3,
+                           #                         dateInput("startdate", label = "Start Date", val= "2020-12-14"), #MU: Should we make the default start value the first data present in the data we read in?
+                           #                         dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
+                           #                         # selectInput(inputId = "toview", label = "Select dataset to view:", 
+                           #                         #             choices = unique(ws3_standard$name), 
+                           #                         #             selected = unique(ws3_standard$name)[1]),
+                           #                         numericInput("poros","Porosity:",
+                           #                                      0.1, step = 0.1, min = 0, max = 1),
+                           #                         verbatimTextOutput("value"),
+                           #                         fluid = TRUE),
+                           #            mainPanel(
+                           #              plotOutput("plot2")
+                           #            )
+                           #          ) 
+                           # ),
                            tabPanel('Table View' ,DTOutput("table")),
                            
                            
@@ -342,6 +358,7 @@ server <- function(input, output) {
       mutate(standardized_deep_well = ((HB176d_corr_depth * 10) * input$poros)) %>%
       select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
   })
+  
   #MU: standardized snow ws3 data to mm H2O
   standardized_SnowHr_WS3 <-  reactive({
     ws3_upper_snowdat_hr %>% 
@@ -349,11 +366,11 @@ server <- function(input, output) {
   })
   
   #MU: standardized snow ws9 data to mm H2O
-  standardized_SnowHr_WS9 <- reactive({
-    ws9_upper_snowdat_hr %>% 
-      mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10)))
+  #standardized_SnowHr_WS9 <- reactive({
+ #   ws9_upper_snowdat_hr %>% 
+ #     mutate(standardized_snow1 = (VWC_average * (Depthscaled_Avg * 10)))
     
-  })
+ # })
   
   #MU: standardized precip data ws3 to mm H2O
   
@@ -361,6 +378,12 @@ server <- function(input, output) {
   #MU: joined ws3 data
   ws3_standard <- reactive ({
     full_join(standardized_Well_WS3(), standardized_SnowHr_WS3(), by = "TIMESTAMP") %>% 
+      pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
+      filter(date() > 2020-12-16)
+  })
+  
+  ws9_standard <- reactive ({
+    full_join(standardized_Well_WS9(), standardized_SnowHr_WS9(), by = "TIMESTAMP") %>% 
       pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
       filter(date() > 2020-12-16)
   })
@@ -377,7 +400,14 @@ server <- function(input, output) {
       geom_area()#+
       #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
   })
-  
+  #output$plot2 <- renderPlot({
+#    ws9_standard() %>% 
+ #     filter(mm > 0) %>% 
+#      ggplot(aes(x = TIMESTAMP, y = mm, fill=Water ))+
+#      geom_area()#+
+#    #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
+ # })
+#  
    output$porosPlot <- renderPlot({
      x <- seq(from = 0, to = 100, by = 0.1)
      y <- x*input$poros + input$change
