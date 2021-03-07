@@ -198,6 +198,11 @@ WS_discharge <- full_join(WS3_weir, WS9_weir, by = "TIMESTAMP") %>%
   `colnames<-`(c("TIMESTAMP", "WS3_Discharge", "W9_Discharge")) %>% 
   pivot_longer(!TIMESTAMP, names_to = "Watershed", values_to = "Discharge")
 
+#AW - not sure if this is beneficial; full join for both watersheds of the precip
+# and the discharge data so it is all in one table 
+#The times do not line up at all so mostly it just simplifies it by being all in one table 
+WS_precip_dis <- full_join(WS_precip, WS_discharge, by = c("TIMESTAMP", "Watershed"))
+
 # Define UI for application
 ui <- fluidPage(navbarPage("Hubbard Brook - Realtime Watershed Data Explorer",
                            theme = shinytheme('cosmo'),
