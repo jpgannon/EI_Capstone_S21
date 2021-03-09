@@ -79,6 +79,7 @@ ui <- dashboardPage(
     )),
 )
 
+
 server <- function(input, output) {
     output$timeseries_plot <- renderPlot({
         min <- input$Year[1]
